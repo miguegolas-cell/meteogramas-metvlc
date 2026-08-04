@@ -1,22 +1,29 @@
-# Meteogramas MetVlc v4.1
+# Meteogramas MetVlc · versión 5.0
 
-Versión corregida para evitar la caché del navegador. Los archivos de estilo y JavaScript cambian de nombre:
+Visor meteorológico para la provincia de Valencia.
 
-- `estilos-v4.css`
-- `app-v4.js`
+## Archivos que deben quedar en la raíz de GitHub Pages
 
-## Instalación
+- `index.html`
+- `estilos-v5.css`
+- `app-v5.js`
+- `README.md`
 
-Sustituye **todos** los archivos de la carpeta anterior por los cuatro archivos de esta versión. No mezcles archivos de versiones anteriores.
+Puedes borrar de `main` los archivos antiguos `app.js`, `estilos.css`, `app-v4.js` y `estilos-v4.css` después de subir esta versión.
 
-Después ejecuta `python -m http.server 8000` y abre `http://localhost:8000`.
+## Novedades
 
-## Variables avanzadas
+- Un gráfico por fila.
+- Temperatura a 850 hPa obtenida siempre de NOAA GFS.
+- CAPE y CIN en un mismo gráfico.
+- Apoyo GFS para LI, CIN, CAPE y PBL cuando el modelo principal no los entrega.
+- Perfil vertical previsto GFS con selector de fecha y hora.
+- Perfil temperatura/punto de rocío, hodógrafa, Haines, LCL, nivel de 0 °C, cizalladura e inversiones.
+- Tabla de noches tropicales, ecuatoriales y tórridas.
+- Clasificación de recuperación nocturna usando la HR máxima entre puesta de sol y amanecer.
 
-- NOAA GFS: CAPE, LI, CIN, PBL y temperatura a 850 hPa.
-- ECMWF IFS: CAPE, CIN, PBL y temperatura a 850 hPa; no proporciona LI.
-- ICON: CAPE y temperatura a 850 hPa.
-- Météo-France: CAPE y temperatura a 850 hPa.
-- Mejor ajuste: la disponibilidad depende del modelo elegido automáticamente por Open-Meteo.
+## Publicación
 
-La helicidad/SRH no está disponible directamente en Open-Meteo y queda marcada como pendiente de otra fuente.
+Sube los cuatro archivos a la raíz del repositorio. Después abre GitHub Pages y realiza una recarga forzada con `Ctrl + F5`.
+
+Los datos son predicciones automáticas. No sustituyen los avisos ni las predicciones oficiales de AEMET.

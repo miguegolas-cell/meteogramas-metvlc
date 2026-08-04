@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos-v4.css?v=4.1.0">
+  <link rel="stylesheet" href="estilos-v5.css?v=5.0.0">
 </head>
 <body>
   <header class="cabecera">
@@ -156,19 +156,20 @@
         <div class="separador-seccion">
           <p class="etiqueta">INESTABILIDAD Y CAPA LÍMITE</p>
           <h3>5. Parámetros de inestabilidad</h3>
-          <p>La disponibilidad depende del modelo seleccionado. Para visualizar LI, CIN y PBL conjuntamente, selecciona NOAA GFS. ECMWF ofrece CAPE, CIN y PBL, pero no LI.</p>
+          <p>La disponibilidad depende del modelo seleccionado. CAPE y CIN se representan conjuntamente. Cuando el modelo elegido no ofrece una variable avanzada, el visor utiliza NOAA GFS como apoyo y lo indica expresamente.</p>
           <p id="estadoVariablesAvanzadas" class="estado-variables">Comprobando variables disponibles…</p>
         </div>
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>5.1 CAPE</h3>
-            <p>Energía potencial convectiva disponible, en J/kg</p>
+            <h3>5.1 CAPE y CIN</h3>
+            <p>Energía convectiva disponible e inhibición convectiva, en J/kg</p>
           </div>
           <div class="lienzo">
-            <canvas id="graficoCape"></canvas>
-            <div id="sinDatosCape" class="sin-datos" hidden></div>
+            <canvas id="graficoCapeCin"></canvas>
+            <div id="sinDatosCapeCin" class="sin-datos" hidden></div>
           </div>
+          <p id="fuenteCapeCin" class="nota-variable"></p>
         </article>
 
         <article class="grafico">
@@ -184,18 +185,7 @@
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>5.3 Inhibición convectiva (CIN)</h3>
-            <p>Energía que dificulta el inicio de la convección, en J/kg</p>
-          </div>
-          <div class="lienzo">
-            <canvas id="graficoCin"></canvas>
-            <div id="sinDatosCin" class="sin-datos" hidden></div>
-          </div>
-        </article>
-
-        <article class="grafico">
-          <div class="titulo-grafico">
-            <h3>5.4 Helicidad / SRH</h3>
+            <h3>5.3 Helicidad / SRH</h3>
             <p>Helicidad relativa a la tormenta</p>
           </div>
           <div class="lienzo">
@@ -207,7 +197,7 @@
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>5.5 Altura de la capa límite (PBL)</h3>
+            <h3>5.4 Altura de la capa límite (PBL)</h3>
             <p>Profundidad prevista de la capa límite planetaria, en metros</p>
           </div>
           <div class="lienzo">
@@ -216,6 +206,88 @@
           </div>
         </article>
       </div>
+    </section>
+
+    <section class="panel perfil-panel" aria-label="Perfil vertical previsto GFS">
+      <div class="cabecera-panel cabecera-perfil">
+        <div>
+          <p class="etiqueta">PERFIL VERTICAL GFS</p>
+          <h2>6. Perfil tipo radiosondeo</h2>
+          <p class="descripcion-seccion">Perfil previsto por NOAA GFS para el punto seleccionado. No es un radiosondeo observado con globo.</p>
+        </div>
+        <div class="control control-hora-perfil">
+          <label for="horaPerfil">Fecha y hora del perfil</label>
+          <select id="horaPerfil" disabled>
+            <option>Cargando perfil GFS…</option>
+          </select>
+          <small id="estadoPerfil">Consultando niveles de presión…</small>
+        </div>
+      </div>
+
+      <div class="rejilla-graficos perfil-graficos">
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>6.1 Temperatura y punto de rocío</h3>
+            <p>Perfil termodinámico en niveles de presión; eje vertical logarítmico</p>
+          </div>
+          <div class="lienzo lienzo-perfil">
+            <canvas id="graficoPerfil"></canvas>
+            <div id="sinDatosPerfil" class="sin-datos" hidden></div>
+          </div>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>6.2 Hodógrafa GFS</h3>
+            <p>Variación vectorial del viento con la altura, en m/s</p>
+          </div>
+          <div class="lienzo lienzo-hodografa">
+            <canvas id="graficoHodografa"></canvas>
+            <div id="sinDatosHodografa" class="sin-datos" hidden></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="perfil-resumen" id="perfilResumen">
+        <div class="tarjeta-perfil"><span>Haines bajo</span><strong id="perfilHainesBajo">—</strong><small>950–850 hPa</small></div>
+        <div class="tarjeta-perfil"><span>Haines medio</span><strong id="perfilHainesMedio">—</strong><small>850–700 hPa</small></div>
+        <div class="tarjeta-perfil"><span>Haines alto</span><strong id="perfilHainesAlto">—</strong><small>700–500 hPa</small></div>
+        <div class="tarjeta-perfil"><span>LCL estimado</span><strong id="perfilLcl">—</strong><small>Altura sobre el terreno</small></div>
+        <div class="tarjeta-perfil"><span>Nivel de 0 °C</span><strong id="perfilCero">—</strong><small>Altura sobre el terreno</small></div>
+        <div class="tarjeta-perfil"><span>Cizalladura 0–6 km</span><strong id="perfilShear6">—</strong><small>Vector total</small></div>
+        <div class="tarjeta-perfil"><span>Cizalladura 0–3 km</span><strong id="perfilShear3">—</strong><small>Vector total</small></div>
+        <div class="tarjeta-perfil"><span>Inversión baja</span><strong id="perfilInversion">—</strong><small>Hasta 3 km AGL</small></div>
+      </div>
+      <p class="nota-metodo">Los índices Haines son cálculos orientativos derivados del perfil GFS. Deben interpretarse con climatología y criterios operativos locales.</p>
+    </section>
+
+    <section class="panel tabla-panel tabla-nocturna-panel">
+      <div class="cabecera-panel">
+        <div>
+          <p class="etiqueta">VIGILANCIA NOCTURNA</p>
+          <h2>Noches cálidas y recuperación de humedad</h2>
+          <p class="descripcion-seccion">Cálculo entre la puesta de sol y el amanecer siguiente.</p>
+        </div>
+      </div>
+      <div class="tabla-desplazable">
+        <table>
+          <thead>
+            <tr>
+              <th>Noche</th>
+              <th>T. mínima nocturna</th>
+              <th>Clasificación</th>
+              <th>HR máxima nocturna</th>
+              <th>Recuperación</th>
+              <th>DPV máximo nocturno</th>
+              <th>Señal</th>
+            </tr>
+          </thead>
+          <tbody id="tablaNocturna">
+            <tr><td colspan="7">Cargando análisis nocturno…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="nota-metodo">Tropical: mínima ≥20 °C · Ecuatorial: ≥25 °C · Tórrida: ≥30 °C · Recuperación baja: HR máxima nocturna &lt;50 %.</p>
     </section>
 
     <section class="panel tabla-panel">
@@ -250,7 +322,7 @@
   <footer>
     <p><strong>Predicción automática:</strong> <span id="modeloFuente">Mejor ajuste Open-Meteo</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
-    <p>Las variables avanzadas dependen de la disponibilidad de cada modelo. La helicidad todavía no tiene una fuente integrada.</p>
+    <p>La temperatura a 850 hPa y el perfil vertical proceden siempre de NOAA GFS. Las variables avanzadas pueden usar GFS como apoyo cuando el modelo principal no las ofrece. La helicidad todavía no tiene una fuente integrada.</p>
     <p>Información orientativa. Los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>
 
@@ -258,6 +330,6 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app-v4.js?v=4.1.0"></script>
+  <script src="app-v5.js?v=5.0.0"></script>
 </body>
 </html>
