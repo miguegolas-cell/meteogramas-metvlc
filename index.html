@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Meteogramas meteorológicos para la provincia de Valencia.">
+  <title>Meteogramas MetVlc · Valencia</title>
+
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <header class="cabecera">
+    <div>
+      <p class="marca">METVLC</p>
+      <h1>Meteogramas de la provincia de Valencia</h1>
+      <p class="subtitulo">Predicción horaria y lectura operativa del punto seleccionado</p>
+    </div>
+    <div class="estado-fuente">
+      <span class="punto-estado" aria-hidden="true"></span>
+      <span id="estadoApi">Preparado para consultar</span>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <section class="panel controles" aria-label="Selección de ubicación y periodo">
+      <form id="formBusqueda" class="busqueda">
+        <label for="buscador">Buscar localidad</label>
+        <div class="fila-busqueda">
+          <input id="buscador" name="buscador" type="search" placeholder="Ej.: Requena, Xàtiva, Ayora…" autocomplete="off">
+          <button type="submit">Buscar</button>
+        </div>
+        <div id="resultadosBusqueda" class="resultados-busqueda" hidden></div>
+      </form>
+
+      <div class="control">
+        <label for="periodo">Periodo</label>
+        <select id="periodo">
+          <option value="3">72 horas</option>
+          <option value="7" selected>7 días</option>
+          <option value="10">10 días</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label for="modelo">Modelo</label>
+        <select id="modelo" disabled>
+          <option value="best_match">Mejor ajuste Open-Meteo</option>
+        </select>
+        <small>La comparación de modelos se añadirá en la siguiente fase.</small>
+      </div>
+
+      <button id="btnUbicacion" class="boton-secundario" type="button">Usar mi ubicación</button>
+    </section>
+
+    <section class="rejilla-superior">
+      <article class="panel mapa-panel">
+        <div class="cabecera-panel">
+          <div>
+            <p class="etiqueta">PUNTO DE PREDICCIÓN</p>
+            <h2 id="nombreLugar">València</h2>
+          </div>
+          <div class="coordenadas">
+            <span id="coordenadas">39.4699, -0.3763</span>
+            <span id="altitud">Altitud: —</span>
+          </div>
+        </div>
+        <div id="mapa" role="application" aria-label="Mapa para seleccionar un punto de la provincia de Valencia"></div>
+        <p class="ayuda-mapa">Haz clic dentro de la provincia para actualizar todos los meteogramas.</p>
+      </article>
+
+      <article class="panel resumen-panel">
+        <div class="cabecera-panel">
+          <div>
+            <p class="etiqueta">RESUMEN OPERATIVO</p>
+            <h2>Indicadores principales</h2>
+          </div>
+        </div>
+
+        <div class="tarjetas" id="tarjetasResumen">
+          <div class="tarjeta"><span>HR mínima</span><strong id="resHrMin">—</strong><small id="resHrHora">—</small></div>
+          <div class="tarjeta"><span>DPV máximo</span><strong id="resDpvMax">—</strong><small id="resDpvHora">—</small></div>
+          <div class="tarjeta"><span>Racha máxima</span><strong id="resRacha">—</strong><small id="resRachaHora">—</small></div>
+          <div class="tarjeta"><span>Precipitación</span><strong id="resPrecip">—</strong><small>Acumulado del periodo</small></div>
+          <div class="tarjeta"><span>CAPE máximo</span><strong id="resCape">—</strong><small id="resCapeNivel">—</small></div>
+          <div class="tarjeta"><span>Recuperación nocturna</span><strong id="resRecuperacion">—</strong><small id="resRecuperacionDetalle">—</small></div>
+        </div>
+
+        <div class="informe" id="informeOperativo">
+          Selecciona un punto para generar el resumen meteorológico.
+        </div>
+      </article>
+    </section>
+
+    <section class="panel graficos-panel" aria-label="Meteogramas horarios">
+      <div class="cabecera-panel cabecera-graficos">
+        <div>
+          <p class="etiqueta">EVOLUCIÓN HORARIA</p>
+          <h2>Meteogramas</h2>
+        </div>
+        <p id="periodoTexto">Próximos 7 días · Hora local peninsular</p>
+      </div>
+
+      <div id="mensajeError" class="mensaje-error" hidden></div>
+      <div id="cargando" class="cargando" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        Consultando el modelo meteorológico…
+      </div>
+
+      <div class="rejilla-graficos">
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>Temperatura y humedad</h3>
+            <p>Temperatura, punto de rocío y humedad relativa</p>
+          </div>
+          <div class="lienzo"><canvas id="graficoTermico"></canvas></div>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>Déficit de presión de vapor</h3>
+            <p>DPV y recuperación de humedad</p>
+          </div>
+          <div class="lienzo"><canvas id="graficoDpv"></canvas></div>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>Viento</h3>
+            <p>Velocidad media, rachas y dirección</p>
+          </div>
+          <div class="lienzo"><canvas id="graficoViento"></canvas></div>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>Precipitación y nubosidad</h3>
+            <p>Precipitación horaria, probabilidad y cobertura nubosa</p>
+          </div>
+          <div class="lienzo"><canvas id="graficoPrecipitacion"></canvas></div>
+        </article>
+
+        <article class="grafico grafico-ancho">
+          <div class="titulo-grafico">
+            <h3>Radiación e inestabilidad</h3>
+            <p>Radiación solar y CAPE</p>
+          </div>
+          <div class="lienzo"><canvas id="graficoInestabilidad"></canvas></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel tabla-panel">
+      <div class="cabecera-panel">
+        <div>
+          <p class="etiqueta">SÍNTESIS DIARIA</p>
+          <h2>Resumen por días</h2>
+        </div>
+      </div>
+      <div class="tabla-desplazable">
+        <table>
+          <thead>
+            <tr>
+              <th>Día</th>
+              <th>T. mín./máx.</th>
+              <th>HR mín./máx.</th>
+              <th>DPV máx.</th>
+              <th>Racha máx.</th>
+              <th>Dirección</th>
+              <th>Precip.</th>
+              <th>CAPE máx.</th>
+            </tr>
+          </thead>
+          <tbody id="tablaDiaria">
+            <tr><td colspan="8">Cargando predicción inicial…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p><strong>Predicción automática:</strong> Open-Meteo. Modelos meteorológicos de organismos nacionales e internacionales.</p>
+    <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
+    <p>Información orientativa. Los avisos y predicciones oficiales corresponden a AEMET.</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
