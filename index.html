@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="estilos-v4.css?v=4.1.0">
 </head>
 <body>
   <header class="cabecera">
@@ -156,7 +156,8 @@
         <div class="separador-seccion">
           <p class="etiqueta">INESTABILIDAD Y CAPA LÍMITE</p>
           <h3>5. Parámetros de inestabilidad</h3>
-          <p>La disponibilidad depende del modelo seleccionado. Los gráficos indican claramente cuándo una variable no está incluida.</p>
+          <p>La disponibilidad depende del modelo seleccionado. Para visualizar LI, CIN y PBL conjuntamente, selecciona NOAA GFS. ECMWF ofrece CAPE, CIN y PBL, pero no LI.</p>
+          <p id="estadoVariablesAvanzadas" class="estado-variables">Comprobando variables disponibles…</p>
         </div>
 
         <article class="grafico">
@@ -257,6 +258,6 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app.js"></script>
+  <script src="app-v4.js?v=4.1.0"></script>
 </body>
 </html>
