@@ -62,3 +62,14 @@ http://localhost:8000
 - Descarga de gráficos en PNG y CSV.
 - Detección de giros de viento y entrada de brisa.
 - Vista de variables a 850, 700 y 500 hPa.
+
+
+## Modelos disponibles
+
+- **Mejor ajuste Open-Meteo:** selección automática de modelos.
+- **ECMWF IFS HRES:** salida global a 9 km.
+- **DWD ICON:** serie integrada global/europea, limitada a 7 días en la interfaz.
+- **NOAA GFS:** modelo global, con probabilidad de precipitación.
+- **Météo-France AROME/ARPEGE:** limitado a 72 horas en la interfaz.
+
+Al cambiar de modelo se vuelve a consultar la predicción para el punto seleccionado.

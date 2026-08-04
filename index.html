@@ -46,11 +46,15 @@
       </div>
 
       <div class="control">
-        <label for="modelo">Modelo</label>
-        <select id="modelo" disabled>
-          <option value="best_match">Mejor ajuste Open-Meteo</option>
+        <label for="modelo">Modelo meteorológico</label>
+        <select id="modelo">
+          <option value="best_match" selected>Mejor ajuste Open-Meteo</option>
+          <option value="ecmwf_ifs">ECMWF IFS HRES · 9 km</option>
+          <option value="dwd_icon_seamless">DWD ICON · global/europeo</option>
+          <option value="ncep_gfs_seamless">NOAA GFS · global</option>
+          <option value="meteofrance_seamless">Météo-France · AROME/ARPEGE</option>
         </select>
-        <small>La comparación de modelos se añadirá en la siguiente fase.</small>
+        <small id="ayudaModelo">Selección automática de los modelos más adecuados para el punto.</small>
       </div>
 
       <button id="btnUbicacion" class="boton-secundario" type="button">Usar mi ubicación</button>
@@ -101,7 +105,10 @@
           <p class="etiqueta">EVOLUCIÓN HORARIA</p>
           <h2>Meteogramas</h2>
         </div>
-        <p id="periodoTexto">Próximos 7 días · Hora local peninsular</p>
+        <div class="metadatos-graficos">
+          <p id="modeloTexto">Modelo: Mejor ajuste Open-Meteo</p>
+          <p id="periodoTexto">Próximos 7 días · Hora local peninsular</p>
+        </div>
       </div>
 
       <div id="mensajeError" class="mensaje-error" hidden></div>
@@ -183,7 +190,7 @@
   </main>
 
   <footer>
-    <p><strong>Predicción automática:</strong> Open-Meteo. Modelos meteorológicos de organismos nacionales e internacionales.</p>
+    <p><strong>Predicción automática:</strong> <span id="modeloFuente">Mejor ajuste Open-Meteo</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
     <p>Información orientativa. Los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>

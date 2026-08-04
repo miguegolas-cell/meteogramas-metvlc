@@ -249,6 +249,9 @@ small { color: var(--texto-suave); }
 .graficos-panel { margin-bottom: 20px; }
 .cabecera-graficos { align-items: center; }
 .cabecera-graficos > p { margin: 0; color: var(--texto-suave); font-size: .8rem; }
+.metadatos-graficos { text-align: right; }
+.metadatos-graficos p { margin: 2px 0; color: var(--texto-suave); font-size: .8rem; }
+#modeloTexto { color: var(--azul-oscuro); font-weight: 750; }
 
 .rejilla-graficos {
   display: grid;

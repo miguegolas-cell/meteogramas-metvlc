@@ -5,7 +5,49 @@ const CONFIG = {
   zonaHoraria: 'Europe/Madrid',
   apiForecast: 'https://api.open-meteo.com/v1/forecast',
   apiGeocoding: 'https://geocoding-api.open-meteo.com/v1/search',
-  limiteProvincia: "https://mapas.fomento.gob.es/arcgis/rest/services/SIU/ENTIDADES_TERRITORIALES_EGRN/MapServer/2/query?where=CodINE%3D%2746%27&outFields=NAMEUNIT%2CCodINE&returnGeometry=true&outSR=4326&f=geojson"
+  limiteProvincia: "https://mapas.fomento.gob.es/arcgis/rest/services/SIU/ENTIDADES_TERRITORIALES_EGRN/MapServer/2/query?where=CodINE%3D%2746%27&outFields=NAMEUNIT%2CCodINE&returnGeometry=true&outSR=4326&f=geojson",
+  modelos: {
+    best_match: {
+      id: 'best_match',
+      nombre: 'Mejor ajuste Open-Meteo',
+      corto: 'Mejor ajuste',
+      maxDias: 10,
+      probPrecipitacion: true,
+      ayuda: 'Selección automática y combinación de los modelos más adecuados para el punto.'
+    },
+    ecmwf_ifs: {
+      id: 'ecmwf_ifs',
+      nombre: 'ECMWF IFS HRES · 9 km',
+      corto: 'ECMWF IFS',
+      maxDias: 10,
+      probPrecipitacion: false,
+      ayuda: 'Modelo global ECMWF IFS HRES a 9 km. Alcance del visor limitado a 10 días.'
+    },
+    dwd_icon_seamless: {
+      id: 'dwd_icon_seamless',
+      nombre: 'DWD ICON · global/europeo',
+      corto: 'DWD ICON',
+      maxDias: 7,
+      probPrecipitacion: false,
+      ayuda: 'Serie ICON integrada por Open-Meteo; para Valencia combina el modelo global y el europeo.'
+    },
+    ncep_gfs_seamless: {
+      id: 'ncep_gfs_seamless',
+      nombre: 'NOAA GFS · global',
+      corto: 'NOAA GFS',
+      maxDias: 10,
+      probPrecipitacion: true,
+      ayuda: 'Modelo global GFS de NOAA. Incluye probabilidad de precipitación calculada con GEFS.'
+    },
+    meteofrance_seamless: {
+      id: 'meteofrance_seamless',
+      nombre: 'Météo-France · AROME/ARPEGE',
+      corto: 'Météo-France',
+      maxDias: 3,
+      probPrecipitacion: false,
+      ayuda: 'Serie Météo-France AROME/ARPEGE. En esta interfaz se limita a 72 horas.'
+    }
+  }
 };
 
 const COLORES = {
@@ -31,7 +73,8 @@ const estado = {
   capaLimite: null,
   graficos: {},
   punto: { ...CONFIG.puntoInicial },
-  datos: null
+  datos: null,
+  modelo: 'best_match'
 };
 
 const $ = (id) => document.getElementById(id);
@@ -40,6 +83,7 @@ function iniciar() {
   configurarChart();
   iniciarMapa();
   enlazarEventos();
+  ajustarPeriodosAlModelo();
   cargarLimiteProvincia();
   consultarPrediccion(CONFIG.puntoInicial.lat, CONFIG.puntoInicial.lon, CONFIG.puntoInicial.nombre);
 }
@@ -104,6 +148,11 @@ async function cargarLimiteProvincia() {
 
 function enlazarEventos() {
   $('periodo').addEventListener('change', () => {
+    consultarPrediccion(estado.punto.lat, estado.punto.lon, estado.punto.nombre);
+  });
+
+  $('modelo').addEventListener('change', () => {
+    ajustarPeriodosAlModelo();
     consultarPrediccion(estado.punto.lat, estado.punto.lon, estado.punto.nombre);
   });
 
@@ -222,27 +271,39 @@ function usarUbicacion() {
 }
 
 async function consultarPrediccion(lat, lon, nombre) {
-  const dias = Number($('periodo').value || 7);
+  const modelo = obtenerModeloSeleccionado();
+  const dias = Math.min(Number($('periodo').value || 7), modelo.maxDias);
   ocultarAviso();
   mostrarCargando(true);
-  setEstadoApi('Actualizando predicción…');
+  setEstadoApi(`Actualizando ${modelo.corto}…`);
 
   try {
-    const url = construirUrlForecast(lat, lon, dias);
+    const url = construirUrlForecast(lat, lon, dias, modelo);
     const respuesta = await fetch(url);
-    if (!respuesta.ok) throw new Error(`Open-Meteo: HTTP ${respuesta.status}`);
+    if (!respuesta.ok) {
+      let detalle = '';
+      try {
+        const errorApi = await respuesta.json();
+        detalle = errorApi.reason || '';
+      } catch {
+        detalle = '';
+      }
+      throw new Error(detalle || `Open-Meteo: HTTP ${respuesta.status}`);
+    }
     const datos = await respuesta.json();
     validarRespuesta(datos);
 
     estado.punto = { lat, lon, nombre };
     estado.datos = datos;
-    actualizarCabeceraPunto(datos);
+    estado.modelo = modelo.id;
+    normalizarDatosOpcionales(datos);
+    actualizarCabeceraPunto(datos, modelo);
     actualizarResumen(datos);
     actualizarGraficos(datos);
     actualizarTablaDiaria(datos);
 
     estado.marcador.setLatLng([lat, lon]);
-    setEstadoApi('Predicción actualizada');
+    setEstadoApi(`${modelo.corto} actualizado`);
   } catch (error) {
     console.error(error);
     mostrarAviso(`No se ha podido cargar la predicción. ${error.message || ''}`);
@@ -252,14 +313,16 @@ async function consultarPrediccion(lat, lon, nombre) {
   }
 }
 
-function construirUrlForecast(lat, lon, dias) {
+function construirUrlForecast(lat, lon, dias, modelo) {
   const url = new URL(CONFIG.apiForecast);
   const hourly = [
     'temperature_2m', 'relative_humidity_2m', 'dew_point_2m', 'vapour_pressure_deficit',
-    'precipitation_probability', 'precipitation', 'cloud_cover', 'cloud_cover_low',
+    'precipitation', 'cloud_cover', 'cloud_cover_low',
     'cloud_cover_mid', 'cloud_cover_high', 'wind_speed_10m', 'wind_direction_10m',
     'wind_gusts_10m', 'shortwave_radiation', 'cape', 'surface_pressure', 'is_day'
   ];
+  if (modelo.probPrecipitacion) hourly.splice(4, 0, 'precipitation_probability');
+
   const daily = [
     'temperature_2m_max', 'temperature_2m_min', 'relative_humidity_2m_max',
     'relative_humidity_2m_min', 'precipitation_sum', 'wind_gusts_10m_max',
@@ -275,7 +338,8 @@ function construirUrlForecast(lat, lon, dias) {
     forecast_days: String(dias),
     timezone: CONFIG.zonaHoraria,
     wind_speed_unit: 'kmh',
-    precipitation_unit: 'mm'
+    precipitation_unit: 'mm',
+    models: modelo.id
   });
   return url;
 }
@@ -284,10 +348,42 @@ function validarRespuesta(datos) {
   if (!datos?.hourly?.time?.length) throw new Error('La respuesta no contiene datos horarios.');
 }
 
-function actualizarCabeceraPunto(datos) {
+function obtenerModeloSeleccionado() {
+  return CONFIG.modelos[$('modelo').value] || CONFIG.modelos.best_match;
+}
+
+function ajustarPeriodosAlModelo() {
+  const modelo = obtenerModeloSeleccionado();
+  const selectorPeriodo = $('periodo');
+  const opciones = [...selectorPeriodo.options];
+
+  opciones.forEach(opcion => {
+    opcion.disabled = Number(opcion.value) > modelo.maxDias;
+  });
+
+  if (Number(selectorPeriodo.value) > modelo.maxDias) {
+    const permitidas = opciones
+      .filter(opcion => !opcion.disabled)
+      .map(opcion => Number(opcion.value));
+    selectorPeriodo.value = String(Math.max(...permitidas));
+  }
+
+  $('ayudaModelo').textContent = modelo.ayuda;
+}
+
+function normalizarDatosOpcionales(datos) {
+  const cantidad = datos.hourly.time.length;
+  if (!Array.isArray(datos.hourly.precipitation_probability)) {
+    datos.hourly.precipitation_probability = Array(cantidad).fill(null);
+  }
+}
+
+function actualizarCabeceraPunto(datos, modelo) {
   $('nombreLugar').textContent = estado.punto.nombre;
   $('coordenadas').textContent = `${estado.punto.lat.toFixed(4)}, ${estado.punto.lon.toFixed(4)}`;
   $('altitud').textContent = `Altitud del modelo: ${redondear(datos.elevation, 0)} m`;
+  $('modeloTexto').textContent = `Modelo: ${modelo.nombre}`;
+  $('modeloFuente').textContent = modelo.nombre;
   $('periodoTexto').textContent = `Próximos ${$('periodo').value === '3' ? '3 días' : `${$('periodo').value} días`} · Hora local peninsular`;
 }
 
@@ -314,7 +410,9 @@ function actualizarResumen(datos) {
 
   const horaCritica = iDpv;
   const direccion = rumbo(h.wind_direction_10m[horaCritica]);
+  const modelo = CONFIG.modelos[estado.modelo] || CONFIG.modelos.best_match;
   $('informeOperativo').innerHTML = [
+    `<strong>${modelo.corto}:</strong>`,
     `<strong>Mayor DPV:</strong> ${formato(h.vapour_pressure_deficit[horaCritica], 2, ' kPa')} el ${formatearFechaHora(h.time[horaCritica])}.`,
     `En esa hora se prevén ${formato(h.temperature_2m[horaCritica], 1, ' °C')}, HR del ${formato(h.relative_humidity_2m[horaCritica], 0, ' %')} y rachas de ${formato(h.wind_gusts_10m[horaCritica], 0, ' km/h')} del ${direccion}.`,
     `<strong>Recuperación nocturna más baja:</strong> ${recuperacion.detalle}.`
@@ -397,7 +495,9 @@ function actualizarGraficos(datos) {
       labels: etiquetas,
       datasets: [
         barras('Precipitación mm', h.precipitation, COLORES.precip, 'y'),
-        linea('Probabilidad %', h.precipitation_probability, COLORES.prob, 'y1', 1.8),
+        ...(h.precipitation_probability.some(valor => valor != null)
+          ? [linea('Probabilidad %', h.precipitation_probability, COLORES.prob, 'y1', 1.8)]
+          : []),
         linea('Nube baja %', h.cloud_cover_low, COLORES.nubeBaja, 'y1', 1.2, true),
         linea('Nube media %', h.cloud_cover_mid, COLORES.nubeMedia, 'y1', 1.2, true),
         linea('Nube alta %', h.cloud_cover_high, COLORES.nubeAlta, 'y1', 1.2, true)
