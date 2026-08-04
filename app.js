@@ -13,6 +13,7 @@ const CONFIG = {
       corto: 'Mejor ajuste',
       maxDias: 10,
       probPrecipitacion: true,
+      variablesAvanzadas: ['temperature_850hPa', 'lifted_index', 'convective_inhibition', 'boundary_layer_height'],
       ayuda: 'Selección automática y combinación de los modelos más adecuados para el punto.'
     },
     ecmwf_ifs: {
@@ -21,6 +22,7 @@ const CONFIG = {
       corto: 'ECMWF IFS',
       maxDias: 10,
       probPrecipitacion: false,
+      variablesAvanzadas: ['temperature_850hPa', 'convective_inhibition', 'boundary_layer_height'],
       ayuda: 'Modelo global ECMWF IFS HRES a 9 km. Alcance del visor limitado a 10 días.'
     },
     dwd_icon_seamless: {
@@ -29,6 +31,7 @@ const CONFIG = {
       corto: 'DWD ICON',
       maxDias: 7,
       probPrecipitacion: false,
+      variablesAvanzadas: ['temperature_850hPa'],
       ayuda: 'Serie ICON integrada por Open-Meteo; para Valencia combina el modelo global y el europeo.'
     },
     ncep_gfs_seamless: {
@@ -37,6 +40,7 @@ const CONFIG = {
       corto: 'NOAA GFS',
       maxDias: 10,
       probPrecipitacion: true,
+      variablesAvanzadas: ['temperature_850hPa', 'lifted_index', 'convective_inhibition', 'boundary_layer_height'],
       ayuda: 'Modelo global GFS de NOAA. Incluye probabilidad de precipitación calculada con GEFS.'
     },
     meteofrance_seamless: {
@@ -45,6 +49,7 @@ const CONFIG = {
       corto: 'Météo-France',
       maxDias: 3,
       probPrecipitacion: false,
+      variablesAvanzadas: ['temperature_850hPa'],
       ayuda: 'Serie Météo-France AROME/ARPEGE. En esta interfaz se limita a 72 horas.'
     }
   }
@@ -52,6 +57,7 @@ const CONFIG = {
 
 const COLORES = {
   temperatura: '#e24a33',
+  temperatura850: '#9c3d88',
   rocio: '#2586c4',
   humedad: '#16835d',
   dpv: '#d17900',
@@ -62,8 +68,10 @@ const COLORES = {
   nubeBaja: '#7993a7',
   nubeMedia: '#9a8ab8',
   nubeAlta: '#c1a469',
-  radiacion: '#e2a400',
-  cape: '#8b3ba7'
+  cape: '#8b3ba7',
+  li: '#245ea8',
+  cin: '#b46b18',
+  pbl: '#267a68'
 };
 
 const estado = {
@@ -293,6 +301,9 @@ async function consultarPrediccion(lat, lon, nombre) {
     const datos = await respuesta.json();
     validarRespuesta(datos);
 
+    const datosAvanzados = await consultarVariablesAvanzadas(lat, lon, dias, modelo, datos.hourly.time);
+    combinarDatosAvanzados(datos, datosAvanzados);
+
     estado.punto = { lat, lon, nombre };
     estado.datos = datos;
     estado.modelo = modelo.id;
@@ -317,11 +328,9 @@ function construirUrlForecast(lat, lon, dias, modelo) {
   const url = new URL(CONFIG.apiForecast);
   const hourly = [
     'temperature_2m', 'relative_humidity_2m', 'dew_point_2m', 'vapour_pressure_deficit',
-    'precipitation', 'cloud_cover', 'cloud_cover_low',
-    'cloud_cover_mid', 'cloud_cover_high', 'wind_speed_10m', 'wind_direction_10m',
-    'wind_gusts_10m', 'shortwave_radiation', 'cape', 'surface_pressure', 'is_day'
+    'precipitation', 'wind_speed_10m', 'wind_direction_10m', 'wind_gusts_10m', 'cape'
   ];
-  if (modelo.probPrecipitacion) hourly.splice(4, 0, 'precipitation_probability');
+  if (modelo.probPrecipitacion) hourly.splice(5, 0, 'precipitation_probability');
 
   const daily = [
     'temperature_2m_max', 'temperature_2m_min', 'relative_humidity_2m_max',
@@ -342,6 +351,61 @@ function construirUrlForecast(lat, lon, dias, modelo) {
     models: modelo.id
   });
   return url;
+}
+
+async function consultarVariablesAvanzadas(lat, lon, dias, modelo, tiemposBase) {
+  const variables = modelo.variablesAvanzadas || [];
+  if (!variables.length) return {};
+
+  try {
+    return await solicitarVariablesAvanzadas(lat, lon, dias, modelo, variables, tiemposBase);
+  } catch (error) {
+    console.warn('Consulta avanzada agrupada no disponible; se prueban variables por separado.', error);
+    const resultados = await Promise.allSettled(
+      variables.map(variable => solicitarVariablesAvanzadas(lat, lon, dias, modelo, [variable], tiemposBase))
+    );
+    return resultados.reduce((acumulado, resultado) => {
+      if (resultado.status === 'fulfilled') Object.assign(acumulado, resultado.value);
+      return acumulado;
+    }, {});
+  }
+}
+
+async function solicitarVariablesAvanzadas(lat, lon, dias, modelo, variables, tiemposBase) {
+  const url = new URL(CONFIG.apiForecast);
+  url.search = new URLSearchParams({
+    latitude: lat.toFixed(5),
+    longitude: lon.toFixed(5),
+    hourly: variables.join(','),
+    forecast_days: String(dias),
+    timezone: CONFIG.zonaHoraria,
+    wind_speed_unit: 'kmh',
+    models: modelo.id
+  });
+
+  const respuesta = await fetch(url);
+  if (!respuesta.ok) throw new Error(`Variables avanzadas: HTTP ${respuesta.status}`);
+  const datos = await respuesta.json();
+  if (!datos?.hourly?.time?.length) throw new Error('Sin datos avanzados horarios.');
+
+  const salida = {};
+  variables.forEach(variable => {
+    if (Array.isArray(datos.hourly[variable])) {
+      salida[variable] = alinearSerie(tiemposBase, datos.hourly.time, datos.hourly[variable]);
+    }
+  });
+  return salida;
+}
+
+function alinearSerie(tiemposBase, tiemposSerie, valores) {
+  const porHora = new Map(tiemposSerie.map((tiempo, i) => [tiempo, valores[i]]));
+  return tiemposBase.map(tiempo => porHora.has(tiempo) ? porHora.get(tiempo) : null);
+}
+
+function combinarDatosAvanzados(datos, datosAvanzados) {
+  Object.entries(datosAvanzados).forEach(([variable, serie]) => {
+    datos.hourly[variable] = serie;
+  });
 }
 
 function validarRespuesta(datos) {
@@ -373,8 +437,18 @@ function ajustarPeriodosAlModelo() {
 
 function normalizarDatosOpcionales(datos) {
   const cantidad = datos.hourly.time.length;
-  if (!Array.isArray(datos.hourly.precipitation_probability)) {
-    datos.hourly.precipitation_probability = Array(cantidad).fill(null);
+  const opcionalesHorarias = [
+    'precipitation_probability', 'temperature_850hPa', 'cape', 'lifted_index',
+    'convective_inhibition', 'boundary_layer_height'
+  ];
+
+  opcionalesHorarias.forEach(variable => {
+    if (!Array.isArray(datos.hourly[variable])) datos.hourly[variable] = Array(cantidad).fill(null);
+  });
+
+  const cantidadDias = datos.daily?.time?.length || 0;
+  if (datos.daily && !Array.isArray(datos.daily.cape_max)) {
+    datos.daily.cape_max = Array(cantidadDias).fill(null);
   }
 }
 
@@ -423,13 +497,23 @@ function actualizarGraficos(datos) {
   const h = datos.hourly;
   const etiquetas = h.time.map(formatearEtiquetaEje);
   const comunes = opcionesComunes(etiquetas.length);
+  const modelo = CONFIG.modelos[estado.modelo] || CONFIG.modelos.best_match;
+
+  const temperatura850Disponible = h.temperature_850hPa.some(valor => valor != null && Number.isFinite(Number(valor)));
+  $('estadoTemp850').hidden = temperatura850Disponible;
+  $('estadoTemp850').textContent = temperatura850Disponible
+    ? ''
+    : `${modelo.corto} no proporciona temperatura a 850 hPa para esta consulta.`;
 
   crearGrafico('termico', 'graficoTermico', {
     type: 'line',
     data: {
       labels: etiquetas,
       datasets: [
-        linea('Temperatura °C', h.temperature_2m, COLORES.temperatura, 'y'),
+        linea('Temperatura 2 m °C', h.temperature_2m, COLORES.temperatura, 'y'),
+        ...(temperatura850Disponible
+          ? [linea('Temperatura 850 hPa °C', h.temperature_850hPa, COLORES.temperatura850, 'y', 2, true)]
+          : []),
         linea('Punto de rocío °C', h.dew_point_2m, COLORES.rocio, 'y'),
         linea('Humedad %', h.relative_humidity_2m, COLORES.humedad, 'y1', 1.8)
       ]
@@ -438,27 +522,8 @@ function actualizarGraficos(datos) {
       ...comunes,
       scales: {
         x: escalaX(),
-        y: { position: 'left', title: { display: true, text: '°C' } },
-        y1: { position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false }, title: { display: true, text: '%' } }
-      }
-    }
-  });
-
-  crearGrafico('dpv', 'graficoDpv', {
-    type: 'line',
-    data: {
-      labels: etiquetas,
-      datasets: [
-        relleno('DPV kPa', h.vapour_pressure_deficit, COLORES.dpv, 'y'),
-        linea('Humedad %', h.relative_humidity_2m, COLORES.humedad, 'y1', 1.6)
-      ]
-    },
-    options: {
-      ...comunes,
-      scales: {
-        x: escalaX(),
-        y: { beginAtZero: true, position: 'left', title: { display: true, text: 'kPa' } },
-        y1: { min: 0, max: 100, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: '%' } }
+        y: { position: 'left', title: { display: true, text: 'Temperatura (°C)' } },
+        y1: { position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false }, title: { display: true, text: 'Humedad (%)' } }
       }
     }
   });
@@ -488,6 +553,7 @@ function actualizarGraficos(datos) {
       scales: { x: escalaX(), y: { beginAtZero: true, title: { display: true, text: 'km/h' } } }
     }
   });
+  actualizarTiraDireccionViento(h.time, h.wind_direction_10m);
 
   crearGrafico('precipitacion', 'graficoPrecipitacion', {
     type: 'bar',
@@ -497,37 +563,108 @@ function actualizarGraficos(datos) {
         barras('Precipitación mm', h.precipitation, COLORES.precip, 'y'),
         ...(h.precipitation_probability.some(valor => valor != null)
           ? [linea('Probabilidad %', h.precipitation_probability, COLORES.prob, 'y1', 1.8)]
-          : []),
-        linea('Nube baja %', h.cloud_cover_low, COLORES.nubeBaja, 'y1', 1.2, true),
-        linea('Nube media %', h.cloud_cover_mid, COLORES.nubeMedia, 'y1', 1.2, true),
-        linea('Nube alta %', h.cloud_cover_high, COLORES.nubeAlta, 'y1', 1.2, true)
+          : [])
       ]
     },
     options: {
       ...comunes,
       scales: {
         x: escalaX(),
-        y: { beginAtZero: true, position: 'left', title: { display: true, text: 'mm' } },
-        y1: { min: 0, max: 100, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: '%' } }
+        y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Precipitación (mm)' } },
+        y1: { min: 0, max: 100, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Probabilidad (%)' } }
       }
     }
   });
 
-  crearGrafico('inestabilidad', 'graficoInestabilidad', {
-    type: 'bar',
+  crearGrafico('dpv', 'graficoDpv', {
+    type: 'line',
     data: {
       labels: etiquetas,
-      datasets: [
-        relleno('Radiación W/m²', h.shortwave_radiation, COLORES.radiacion, 'y'),
-        barras('CAPE J/kg', h.cape, COLORES.cape, 'y1')
-      ]
+      datasets: [relleno('DPV kPa', h.vapour_pressure_deficit, COLORES.dpv, 'y')]
     },
     options: {
       ...comunes,
       scales: {
         x: escalaX(),
-        y: { beginAtZero: true, position: 'left', title: { display: true, text: 'W/m²' } },
-        y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'J/kg' } }
+        y: { beginAtZero: true, title: { display: true, text: 'DPV (kPa)' } }
+      }
+    }
+  });
+
+  crearGraficoOpcional({
+    clave: 'cape', canvasId: 'graficoCape', estadoId: 'sinDatosCape', etiquetas,
+    datos: h.cape, etiqueta: 'CAPE J/kg', color: COLORES.cape, tipo: 'bar', unidad: 'J/kg',
+    mensaje: `${modelo.corto} no proporciona CAPE para esta consulta.`
+  });
+
+  crearGraficoOpcional({
+    clave: 'li', canvasId: 'graficoLi', estadoId: 'sinDatosLi', etiquetas,
+    datos: h.lifted_index, etiqueta: 'Lifted Index', color: COLORES.li, tipo: 'line', unidad: 'LI',
+    mensaje: `${modelo.corto} no proporciona Lifted Index a través de Open-Meteo.`
+  });
+
+  crearGraficoOpcional({
+    clave: 'cin', canvasId: 'graficoCin', estadoId: 'sinDatosCin', etiquetas,
+    datos: h.convective_inhibition, etiqueta: 'CIN J/kg', color: COLORES.cin, tipo: 'bar', unidad: 'J/kg',
+    mensaje: `${modelo.corto} no proporciona inhibición convectiva a través de Open-Meteo.`
+  });
+
+  crearGraficoOpcional({
+    clave: 'pbl', canvasId: 'graficoPbl', estadoId: 'sinDatosPbl', etiquetas,
+    datos: h.boundary_layer_height, etiqueta: 'Altura PBL m', color: COLORES.pbl, tipo: 'line', unidad: 'm',
+    mensaje: `${modelo.corto} no proporciona altura de la PBL a través de Open-Meteo.`
+  });
+}
+
+function actualizarTiraDireccionViento(tiempos, direcciones) {
+  const caja = $('tiraDireccionViento');
+  if (!caja) return;
+  const paso = Math.max(1, Math.ceil(tiempos.length / 16));
+  const indices = [];
+  for (let i = 0; i < tiempos.length; i += paso) indices.push(i);
+
+  caja.innerHTML = indices.map(i => {
+    const grados = Number(direcciones[i]);
+    if (!Number.isFinite(grados)) return '';
+    const hora = new Date(tiempos[i]).toLocaleString('es-ES', { day: '2-digit', hour: '2-digit' });
+    const giro = (grados + 180) % 360;
+    return `<span class="direccion-item" title="${formatearFechaHora(tiempos[i])}: viento de ${rumbo(grados)} (${redondear(grados, 0)}°)">
+      <span class="flecha" style="transform: rotate(${giro}deg)">↑</span>
+      <strong>${rumbo(grados)}</strong><small>${hora}</small>
+    </span>`;
+  }).join('');
+}
+
+function crearGraficoOpcional({ clave, canvasId, estadoId, etiquetas, datos, etiqueta, color, tipo, unidad, mensaje }) {
+  const canvas = $(canvasId);
+  const aviso = $(estadoId);
+  const disponible = Array.isArray(datos) && datos.some(valor => valor != null && Number.isFinite(Number(valor)));
+
+  if (!disponible) {
+    if (estado.graficos[clave]) {
+      estado.graficos[clave].destroy();
+      delete estado.graficos[clave];
+    }
+    canvas.hidden = true;
+    aviso.textContent = mensaje;
+    aviso.hidden = false;
+    return;
+  }
+
+  canvas.hidden = false;
+  aviso.hidden = true;
+  const dataset = tipo === 'bar'
+    ? barras(etiqueta, datos, color, 'y')
+    : relleno(etiqueta, datos, color, 'y');
+
+  crearGrafico(clave, canvasId, {
+    type: tipo === 'bar' ? 'bar' : 'line',
+    data: { labels: etiquetas, datasets: [dataset] },
+    options: {
+      ...opcionesComunes(etiquetas.length),
+      scales: {
+        x: escalaX(),
+        y: { beginAtZero: tipo !== 'line' || clave === 'pbl', title: { display: true, text: unidad } }
       }
     }
   });

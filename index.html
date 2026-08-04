@@ -120,42 +120,99 @@
       <div class="rejilla-graficos">
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>Temperatura y humedad</h3>
-            <p>Temperatura, punto de rocío y humedad relativa</p>
+            <h3>1. Temperatura, humedad y punto de rocío</h3>
+            <p>Temperatura a 2 m, temperatura a 850 hPa, punto de rocío y humedad relativa</p>
           </div>
           <div class="lienzo"><canvas id="graficoTermico"></canvas></div>
+          <p id="estadoTemp850" class="nota-variable" hidden></p>
         </article>
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>Déficit de presión de vapor</h3>
-            <p>DPV y recuperación de humedad</p>
-          </div>
-          <div class="lienzo"><canvas id="graficoDpv"></canvas></div>
-        </article>
-
-        <article class="grafico">
-          <div class="titulo-grafico">
-            <h3>Viento</h3>
-            <p>Velocidad media, rachas y dirección</p>
+            <h3>2. Viento, rachas y dirección</h3>
+            <p>Velocidad a 10 m, rachas máximas y evolución de la procedencia del viento</p>
           </div>
           <div class="lienzo"><canvas id="graficoViento"></canvas></div>
+          <div id="tiraDireccionViento" class="tira-direccion-viento" aria-label="Dirección prevista del viento"></div>
+          <p class="nota-direccion">La sigla indica de dónde viene el viento; la flecha señala hacia dónde sopla.</p>
         </article>
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>Precipitación y nubosidad</h3>
-            <p>Precipitación horaria, probabilidad y cobertura nubosa</p>
+            <h3>3. Precipitación</h3>
+            <p>Precipitación horaria y probabilidad, cuando el modelo la proporciona</p>
           </div>
           <div class="lienzo"><canvas id="graficoPrecipitacion"></canvas></div>
         </article>
 
-        <article class="grafico grafico-ancho">
+        <article class="grafico">
           <div class="titulo-grafico">
-            <h3>Radiación e inestabilidad</h3>
-            <p>Radiación solar y CAPE</p>
+            <h3>4. Déficit de presión de vapor</h3>
+            <p>Evolución horaria del DPV en kPa</p>
           </div>
-          <div class="lienzo"><canvas id="graficoInestabilidad"></canvas></div>
+          <div class="lienzo"><canvas id="graficoDpv"></canvas></div>
+        </article>
+
+        <div class="separador-seccion">
+          <p class="etiqueta">INESTABILIDAD Y CAPA LÍMITE</p>
+          <h3>5. Parámetros de inestabilidad</h3>
+          <p>La disponibilidad depende del modelo seleccionado. Los gráficos indican claramente cuándo una variable no está incluida.</p>
+        </div>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>5.1 CAPE</h3>
+            <p>Energía potencial convectiva disponible, en J/kg</p>
+          </div>
+          <div class="lienzo">
+            <canvas id="graficoCape"></canvas>
+            <div id="sinDatosCape" class="sin-datos" hidden></div>
+          </div>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>5.2 Lifted Index (LI)</h3>
+            <p>Índice de estabilidad; los valores negativos indican mayor inestabilidad</p>
+          </div>
+          <div class="lienzo">
+            <canvas id="graficoLi"></canvas>
+            <div id="sinDatosLi" class="sin-datos" hidden></div>
+          </div>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>5.3 Inhibición convectiva (CIN)</h3>
+            <p>Energía que dificulta el inicio de la convección, en J/kg</p>
+          </div>
+          <div class="lienzo">
+            <canvas id="graficoCin"></canvas>
+            <div id="sinDatosCin" class="sin-datos" hidden></div>
+          </div>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>5.4 Helicidad / SRH</h3>
+            <p>Helicidad relativa a la tormenta</p>
+          </div>
+          <div class="lienzo">
+            <div class="sin-datos sin-datos-fijo">
+              Open-Meteo no proporciona helicidad directamente. Este gráfico queda reservado para una fuente específica o para un cálculo posterior con el perfil vertical completo y el movimiento de la tormenta.
+            </div>
+          </div>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>5.5 Altura de la capa límite (PBL)</h3>
+            <p>Profundidad prevista de la capa límite planetaria, en metros</p>
+          </div>
+          <div class="lienzo">
+            <canvas id="graficoPbl"></canvas>
+            <div id="sinDatosPbl" class="sin-datos" hidden></div>
+          </div>
         </article>
       </div>
     </section>
@@ -192,6 +249,7 @@
   <footer>
     <p><strong>Predicción automática:</strong> <span id="modeloFuente">Mejor ajuste Open-Meteo</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
+    <p>Las variables avanzadas dependen de la disponibilidad de cada modelo. La helicidad todavía no tiene una fuente integrada.</p>
     <p>Información orientativa. Los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>
 
