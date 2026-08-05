@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos-v51.css?v=5.1.0">
+  <link rel="stylesheet" href="estilos-v6.css?v=6.0.0">
 </head>
 <body>
   <header class="cabecera">
@@ -224,13 +224,35 @@
         </div>
       </div>
 
+      <article class="grafico skewt-grafico">
+        <div class="titulo-grafico titulo-skewt">
+          <div>
+            <h3>6.1 Skew-T / log-P avanzado</h3>
+            <p>Temperatura, punto de rocío, parcela superficial, adiabáticas secas y húmedas, líneas de mezcla y áreas de CAPE/CIN.</p>
+          </div>
+          <span class="insignia insignia-modelo">Parcela superficial GFS</span>
+        </div>
+        <div class="lienzo lienzo-skewt">
+          <canvas id="graficoSkewT"></canvas>
+          <div id="sinDatosSkewT" class="sin-datos" hidden></div>
+        </div>
+        <div class="leyenda-skewt" aria-label="Leyenda del diagrama Skew-T">
+          <span><i class="muestra muestra-temp"></i>Temperatura ambiental</span>
+          <span><i class="muestra muestra-rocio"></i>Punto de rocío</span>
+          <span><i class="muestra muestra-parcela"></i>Parcela</span>
+          <span><i class="muestra muestra-cape"></i>CAPE calculado</span>
+          <span><i class="muestra muestra-cin"></i>CIN calculado</span>
+        </div>
+        <p id="estadoSkewT" class="nota-metodo">Calculando trayectoria de la parcela y niveles característicos…</p>
+      </article>
+
       <div class="rejilla-graficos perfil-graficos">
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>6.1 Temperatura y punto de rocío</h3>
-            <p>Perfil termodinámico en niveles de presión; eje vertical logarítmico</p>
+            <h3>6.2 Perfil simple T/Td</h3>
+            <p>Temperatura y punto de rocío en niveles de presión; eje vertical logarítmico.</p>
           </div>
-          <div class="lienzo lienzo-perfil">
+          <div class="lienzo lienzo-perfil-simple">
             <canvas id="graficoPerfil"></canvas>
             <div id="sinDatosPerfil" class="sin-datos" hidden></div>
           </div>
@@ -238,8 +260,8 @@
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>6.2 Hodógrafa GFS</h3>
-            <p>Variación vectorial del viento con la altura, en m/s</p>
+            <h3>6.3 Hodógrafa GFS</h3>
+            <p>Variación vectorial del viento con la altura, en m/s.</p>
           </div>
           <div class="lienzo lienzo-hodografa">
             <canvas id="graficoHodografa"></canvas>
@@ -250,7 +272,7 @@
 
       <article class="grafico tabla-perfil-grafico">
         <div class="titulo-grafico">
-          <h3>6.3 Datos por nivel</h3>
+          <h3>6.4 Datos por nivel</h3>
           <p>Comprobación numérica de temperatura, punto de rocío, humedad y viento en cada nivel válido.</p>
         </div>
         <div class="tabla-desplazable tabla-perfil-desplazable">
@@ -274,17 +296,26 @@
         <p class="nota-metodo">Los niveles situados por debajo del terreno pueden no existir para puntos elevados. Cuando GFS no entrega Td directamente, se calcula con la temperatura y la humedad relativa del mismo nivel.</p>
       </article>
 
+      <div class="perfil-resumen perfil-resumen-termo" id="perfilResumenTermo">
+        <div class="tarjeta-perfil tarjeta-cape"><span>SB-CAPE calculado</span><strong id="perfilCapeCalc">—</strong><small>Parcela superficial</small></div>
+        <div class="tarjeta-perfil tarjeta-cin"><span>SB-CIN calculado</span><strong id="perfilCinCalc">—</strong><small>Hasta el LFC/NCA</small></div>
+        <div class="tarjeta-perfil"><span>LCL / NCL</span><strong id="perfilLcl">—</strong><small>Nivel de condensación</small></div>
+        <div class="tarjeta-perfil"><span>LFC / NCA</span><strong id="perfilLfc">—</strong><small>Convección libre</small></div>
+        <div class="tarjeta-perfil"><span>EL / NE</span><strong id="perfilEl">—</strong><small>Nivel de equilibrio</small></div>
+        <div class="tarjeta-perfil"><span>CCL / NCC</span><strong id="perfilCcl">—</strong><small>Condensación convectiva</small></div>
+        <div class="tarjeta-perfil"><span>Nivel de 0 °C</span><strong id="perfilCero">—</strong><small>Altura sobre el terreno</small></div>
+        <div class="tarjeta-perfil"><span>PBL</span><strong id="perfilPblNivel">—</strong><small>Altura y presión estimadas</small></div>
+      </div>
+
       <div class="perfil-resumen" id="perfilResumen">
         <div class="tarjeta-perfil"><span>Haines bajo</span><strong id="perfilHainesBajo">—</strong><small>950–850 hPa</small></div>
         <div class="tarjeta-perfil"><span>Haines medio</span><strong id="perfilHainesMedio">—</strong><small>850–700 hPa</small></div>
         <div class="tarjeta-perfil"><span>Haines alto</span><strong id="perfilHainesAlto">—</strong><small>700–500 hPa</small></div>
-        <div class="tarjeta-perfil"><span>LCL estimado</span><strong id="perfilLcl">—</strong><small>Altura sobre el terreno</small></div>
-        <div class="tarjeta-perfil"><span>Nivel de 0 °C</span><strong id="perfilCero">—</strong><small>Altura sobre el terreno</small></div>
         <div class="tarjeta-perfil"><span>Cizalladura 0–6 km</span><strong id="perfilShear6">—</strong><small>Vector total</small></div>
         <div class="tarjeta-perfil"><span>Cizalladura 0–3 km</span><strong id="perfilShear3">—</strong><small>Vector total</small></div>
         <div class="tarjeta-perfil"><span>Inversión baja</span><strong id="perfilInversion">—</strong><small>Hasta 3 km AGL</small></div>
       </div>
-      <p class="nota-metodo">Los índices Haines son cálculos orientativos derivados del perfil GFS. Deben interpretarse con climatología y criterios operativos locales.</p>
+      <p class="nota-metodo">CAPE, CIN y los niveles termodinámicos del Skew-T se calculan en el navegador con una parcela superficial. Pueden diferir del campo CAPE/CIN nativo de GFS por el método de parcela, la interpolación vertical y el tratamiento de la temperatura virtual. Los índices Haines son orientativos.</p>
     </section>
 
     <section class="panel tabla-panel tabla-nocturna-panel">
@@ -348,7 +379,7 @@
   <footer>
     <p><strong>Predicción automática:</strong> <span id="modeloFuente">Mejor ajuste Open-Meteo</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
-    <p>La temperatura a 850 hPa y el perfil vertical proceden siempre de NOAA GFS. Las variables avanzadas pueden usar GFS como apoyo cuando el modelo principal no las ofrece. La helicidad todavía no tiene una fuente integrada.</p>
+    <p>La temperatura a 850 hPa, el perfil vertical y el Skew-T proceden siempre de NOAA GFS. Las variables avanzadas pueden usar GFS como apoyo cuando el modelo principal no las ofrece. La helicidad todavía no tiene una fuente integrada.</p>
     <p>Información orientativa. Los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>
 
@@ -356,6 +387,6 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app-v51.js?v=5.1.0"></script>
+  <script src="app-v6.js?v=6.0.0"></script>
 </body>
 </html>
