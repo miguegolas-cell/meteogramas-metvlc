@@ -20,10 +20,45 @@ USER_AGENT = "MetVlc-Meteogramas/6.3 (+GitHub Actions)"
 BBOX = {"lat_min": 37.4, "lat_max": 41.2, "lon_min": -2.6, "lon_max": 1.1}
 
 
+def decode_json_bytes(body: bytes, declared_charset: str | None = None) -> object:
+    """Decodifica JSON aunque AEMET responda en UTF-8 o Windows-1252/Latin-1."""
+    encodings: list[str] = []
+    if declared_charset:
+        encodings.append(declared_charset.strip().lower())
+
+    # UTF-8 sigue siendo la opción preferente. Algunas respuestas de datos de
+    # AEMET contienen caracteres españoles codificados como Windows-1252.
+    encodings.extend(["utf-8-sig", "utf-8", "cp1252", "iso-8859-1"])
+
+    tried: set[str] = set()
+    last_error: Exception | None = None
+    for encoding in encodings:
+        if not encoding or encoding in tried:
+            continue
+        tried.add(encoding)
+        try:
+            return json.loads(body.decode(encoding))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            last_error = exc
+
+    raise ValueError(
+        f"No se pudo decodificar la respuesta JSON. Codificaciones probadas: {', '.join(tried)}"
+    ) from last_error
+
+
 def get_json(url: str) -> object:
-    req = Request(url, headers={"User-Agent": USER_AGENT, "Cache-Control": "no-cache"})
+    req = Request(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Cache-Control": "no-cache",
+            "Accept": "application/json",
+        },
+    )
     with urlopen(req, timeout=45) as response:
-        return json.loads(response.read().decode("utf-8-sig"))
+        body = response.read()
+        charset = response.headers.get_content_charset()
+    return decode_json_bytes(body, charset)
 
 
 def number(value):
