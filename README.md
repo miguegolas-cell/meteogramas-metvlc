@@ -5,8 +5,8 @@ Visor meteorológico para la provincia de Valencia.
 ## Archivos que deben quedar en la raíz de GitHub Pages
 
 - `index.html`
-- `estilos-v5.css`
-- `app-v5.js`
+- `estilos-v51.css`
+- `app-v51.js`
 - `README.md`
 
 Puedes borrar de `main` los archivos antiguos `app.js`, `estilos.css`, `app-v4.js` y `estilos-v4.css` después de subir esta versión.
@@ -27,3 +27,11 @@ Puedes borrar de `main` los archivos antiguos `app.js`, `estilos.css`, `app-v4.j
 Sube los cuatro archivos a la raíz del repositorio. Después abre GitHub Pages y realiza una recarga forzada con `Ctrl + F5`.
 
 Los datos son predicciones automáticas. No sustituyen los avisos ni las predicciones oficiales de AEMET.
+
+
+## Corrección 5.1 del perfil vertical
+
+- Consulta GFS dividida en bloques para evitar respuestas parciales.
+- Temperatura y humedad relativa en todos los niveles GFS válidos entre 1000 y 100 hPa.
+- Punto de rocío directo o calculado a partir de T/HR cuando sea necesario.
+- Tabla completa por nivel para verificar T, Td, HR, altura y viento.
