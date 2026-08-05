@@ -1,45 +1,63 @@
-# Meteogramas MetVlc · versión 6.1
+# Meteogramas MetVlc v6.3
 
-Visor meteorológico para la provincia de Valencia.
+Visor meteorológico para la provincia de Valencia con selección de modelos, meteogramas operativos, Skew‑T previsto por GFS, diagnóstico de mezcla descendente y observaciones actuales de estaciones AEMET.
 
-## Novedades
-
-- Skew-T / log-P previsto con NOAA GFS.
-- Temperatura, punto de rocío y trayectoria de una parcela superficial.
-- Adiabáticas secas, pseudo-adiabáticas húmedas y líneas de razón de mezcla.
-- CAPE y CIN calculados y sombreados en el propio perfil.
-- Niveles LCL/NCL, LFC/NCA, EL/NE, CCL/NCC, nivel de 0 °C y PBL.
-- Se mantienen el perfil simple, la hodógrafa, Haines, cizalladura y las tablas nocturnas.
-
-## Archivos que deben quedar en la raíz de GitHub Pages
+## Archivos principales
 
 - `index.html`
-- `estilos-v62.css`
-- `app-v62.js`
-- `README.md`
+- `estilos-v63.css`
+- `app-v63.js`
+- `datos/observaciones_aemet.json`
+- `scripts/actualizar_observaciones_aemet.py`
+- `.github/workflows/actualizar-observaciones-aemet.yml`
 
-Borra los archivos JavaScript y CSS de versiones anteriores para evitar confusiones. El `index.html` incluye versión en la URL de los recursos para evitar la caché.
+## Novedades v6.3
 
-## Nota técnica
+- Temperatura de disparo calculada desde el CCL.
+- Línea de razón de mezcla superficial hasta el CCL.
+- Adiabática seca trazada desde la temperatura de disparo.
+- Línea de mezcla seca necesaria para alcanzar el techo de la PBL.
+- Diagnóstico experimental de potencial de mezcla descendente.
+- Sección con las tres estaciones AEMET más próximas.
+- Advertencia por distancia y diferencia de altitud.
+- Estimación de modelo claramente etiquetada cuando no hay observación representativa.
 
-El Skew-T es un perfil previsto de GFS, no un radiosondeo observado. CAPE, CIN y niveles termodinámicos se calculan en el navegador mediante una parcela superficial y pueden diferir de los campos nativos del modelo.
+## Activar las observaciones AEMET
 
+1. Solicita una API key gratuita en AEMET OpenData.
+2. En GitHub entra en `Settings → Secrets and variables → Actions`.
+3. Crea el secreto:
 
-## Ajustes de la versión 6.1
-- Resumen operativo centrado en el día actual y la próxima noche.
-- Escalas cualitativas MetVlc para CAPE, CIN y LI.
-- Selector temporal del perfil mediante barra deslizante.
-- Eliminado el bloque de helicidad/SRH.
-- Dirección del viento cada 3 horas con desplazamiento horizontal.
-- El mapa ocupa toda la altura disponible del panel.
+```text
+AEMET_API_KEY
+```
 
+4. Entra en `Actions → Actualizar observaciones AEMET → Run workflow`.
+5. El workflow generará `datos/observaciones_aemet.json` y lo actualizará cada 15 minutos.
 
-## Ajuste v6.2 de escalas de inestabilidad
+La clave nunca se publica en `app-v63.js` ni en GitHub Pages.
 
-- Se mantienen las bandas coloreadas dentro de CAPE/CIN y LI.
-- El eje Y vuelve a mostrar únicamente valores numéricos.
-- CAPE: 0–100 residual; 100–300 baja; 300–700 moderada; 700–1200 alta; 1200–2000 muy alta; >2000 extrema.
-- CIN (valores negativos): 0 a −15 escasa; −15 a −35 débil; −35 a −75 moderada; −75 a −125 fuerte; <−125 muy fuerte.
-- LI: >+2 estable; 0 a +2 casi neutro; 0 a −2 baja; −2 a −4 moderada; −4 a −6 alta; <−6 muy alta/extrema.
+## Criterio de proximidad
 
-Estas bandas son orientativas y están adaptadas al contexto mediterráneo valenciano. No son umbrales oficiales ni sustituyen el análisis del perfil, la convergencia, la orografía, la humedad y la cizalladura.
+- Hasta 40 km: estación cercana.
+- Entre 40 y 80 km: estación distante; interpretar con cautela.
+- Más de 80 km: no se considera representativa y se muestra una estimación de modelo como referencia no observada.
+
+La distancia no basta: el visor también muestra la diferencia de altitud. Una estación costera no representa necesariamente un punto de montaña aunque esté relativamente próxima.
+
+## Potencial de mezcla descendente
+
+El indicador combina:
+
+- altura de la PBL;
+- temperatura prevista y temperatura necesaria para mezclar hasta su techo;
+- máximo viento disponible dentro de la PBL;
+- diferencia respecto al viento superficial;
+- humedad y depresión del punto de rocío cerca del techo;
+- presencia de inversión baja.
+
+Es un diagnóstico experimental y no una predicción exacta de rachas.
+
+## Publicación
+
+Sube la estructura completa a la raíz del repositorio y activa GitHub Pages desde la rama `main`, carpeta `/root`.
