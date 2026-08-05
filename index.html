@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos-v6.css?v=6.0.0">
+  <link rel="stylesheet" href="estilos-v61.css?v=6.1.0">
 </head>
 <body>
   <header class="cabecera">
@@ -85,12 +85,12 @@
         </div>
 
         <div class="tarjetas" id="tarjetasResumen">
-          <div class="tarjeta"><span>HR mínima</span><strong id="resHrMin">—</strong><small id="resHrHora">—</small></div>
-          <div class="tarjeta"><span>DPV máximo</span><strong id="resDpvMax">—</strong><small id="resDpvHora">—</small></div>
-          <div class="tarjeta"><span>Racha máxima</span><strong id="resRacha">—</strong><small id="resRachaHora">—</small></div>
-          <div class="tarjeta"><span>Precipitación</span><strong id="resPrecip">—</strong><small>Acumulado del periodo</small></div>
-          <div class="tarjeta"><span>CAPE máximo</span><strong id="resCape">—</strong><small id="resCapeNivel">—</small></div>
-          <div class="tarjeta"><span>Recuperación nocturna</span><strong id="resRecuperacion">—</strong><small id="resRecuperacionDetalle">—</small></div>
+          <div class="tarjeta"><span>Temperatura de hoy</span><strong id="resTemperaturaHoy">—</strong><small>Mínima / máxima prevista</small></div>
+          <div class="tarjeta"><span>Humedad de hoy</span><strong id="resHumedadHoy">—</strong><small>Mínima / máxima prevista</small></div>
+          <div class="tarjeta"><span>Racha máxima de hoy</span><strong id="resRachaHoy">—</strong><small id="resRachaHoyHora">—</small></div>
+          <div class="tarjeta"><span>Viento predominante de hoy</span><strong id="resVientoHoy">—</strong><small id="resVientoHoyDetalle">—</small></div>
+          <div class="tarjeta"><span>Próxima recuperación nocturna</span><strong id="resRecuperacion">—</strong><small id="resRecuperacionDetalle">—</small></div>
+          <div class="tarjeta tarjeta-destacada"><span>DPV máximo previsto</span><strong id="resDpvMax">—</strong><small id="resDpvCondiciones">—</small></div>
         </div>
 
         <div class="informe" id="informeOperativo">
@@ -170,6 +170,7 @@
             <div id="sinDatosCapeCin" class="sin-datos" hidden></div>
           </div>
           <p id="fuenteCapeCin" class="nota-variable"></p>
+          <p class="escala-operativa">Escala operativa MetVlc para la Comunitat Valenciana: CAPE muy baja 0–100, baja 100–300, moderada 300–700, alta 700–1200 y muy alta &gt;1200 J/kg. CIN se interpreta por su magnitud negativa.</p>
         </article>
 
         <article class="grafico">
@@ -181,23 +182,12 @@
             <canvas id="graficoLi"></canvas>
             <div id="sinDatosLi" class="sin-datos" hidden></div>
           </div>
+          <p class="escala-operativa">Escala orientativa MetVlc: estable &gt;+2; casi neutro 0 a +2; inestabilidad baja 0 a −2; moderada −2 a −4; alta −4 a −6; muy alta &lt;−6.</p>
         </article>
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>5.3 Helicidad / SRH</h3>
-            <p>Helicidad relativa a la tormenta</p>
-          </div>
-          <div class="lienzo">
-            <div class="sin-datos sin-datos-fijo">
-              Open-Meteo no proporciona helicidad directamente. Este gráfico queda reservado para una fuente específica o para un cálculo posterior con el perfil vertical completo y el movimiento de la tormenta.
-            </div>
-          </div>
-        </article>
-
-        <article class="grafico">
-          <div class="titulo-grafico">
-            <h3>5.4 Altura de la capa límite (PBL)</h3>
+            <h3>5.3 Altura de la capa límite (PBL)</h3>
             <p>Profundidad prevista de la capa límite planetaria, en metros</p>
           </div>
           <div class="lienzo">
@@ -217,9 +207,8 @@
         </div>
         <div class="control control-hora-perfil">
           <label for="horaPerfil">Fecha y hora del perfil</label>
-          <select id="horaPerfil" disabled>
-            <option>Cargando perfil GFS…</option>
-          </select>
+          <input id="horaPerfil" class="barra-hora-perfil" type="range" min="0" max="0" step="1" value="0" disabled>
+          <output id="horaPerfilTexto" class="hora-perfil-texto" for="horaPerfil">Cargando perfil GFS…</output>
           <small id="estadoPerfil">Consultando niveles de presión…</small>
         </div>
       </div>
@@ -379,7 +368,7 @@
   <footer>
     <p><strong>Predicción automática:</strong> <span id="modeloFuente">Mejor ajuste Open-Meteo</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
-    <p>La temperatura a 850 hPa, el perfil vertical y el Skew-T proceden siempre de NOAA GFS. Las variables avanzadas pueden usar GFS como apoyo cuando el modelo principal no las ofrece. La helicidad todavía no tiene una fuente integrada.</p>
+    <p>La temperatura a 850 hPa, el perfil vertical y el Skew-T proceden siempre de NOAA GFS. Las variables avanzadas pueden usar GFS como apoyo cuando el modelo principal no las ofrece.</p>
     <p>Información orientativa. Los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>
 
@@ -387,6 +376,6 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app-v6.js?v=6.0.0"></script>
+  <script src="app-v61.js?v=6.1.0"></script>
 </body>
 </html>

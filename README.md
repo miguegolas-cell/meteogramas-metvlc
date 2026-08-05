@@ -1,4 +1,4 @@
-# Meteogramas MetVlc · versión 6.0
+# Meteogramas MetVlc · versión 6.1
 
 Visor meteorológico para la provincia de Valencia.
 
@@ -14,8 +14,8 @@ Visor meteorológico para la provincia de Valencia.
 ## Archivos que deben quedar en la raíz de GitHub Pages
 
 - `index.html`
-- `estilos-v6.css`
-- `app-v6.js`
+- `estilos-v61.css`
+- `app-v61.js`
 - `README.md`
 
 Borra los archivos JavaScript y CSS de versiones anteriores para evitar confusiones. El `index.html` incluye versión en la URL de los recursos para evitar la caché.
@@ -23,3 +23,12 @@ Borra los archivos JavaScript y CSS de versiones anteriores para evitar confusio
 ## Nota técnica
 
 El Skew-T es un perfil previsto de GFS, no un radiosondeo observado. CAPE, CIN y niveles termodinámicos se calculan en el navegador mediante una parcela superficial y pueden diferir de los campos nativos del modelo.
+
+
+## Ajustes de la versión 6.1
+- Resumen operativo centrado en el día actual y la próxima noche.
+- Escalas cualitativas MetVlc para CAPE, CIN y LI.
+- Selector temporal del perfil mediante barra deslizante.
+- Eliminado el bloque de helicidad/SRH.
+- Dirección del viento cada 3 horas con desplazamiento horizontal.
+- El mapa ocupa toda la altura disponible del panel.
