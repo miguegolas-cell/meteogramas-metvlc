@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos-v63.css?v=6.3.0">
+  <link rel="stylesheet" href="estilos-v65.css?v=6.5.0">
 </head>
 <body>
   <header class="cabecera">
@@ -229,17 +229,17 @@
       </div>
     </section>
 
-    <section class="panel perfil-panel" aria-label="Perfil vertical previsto GFS">
+    <section class="panel perfil-panel" aria-label="Perfil vertical previsto del modelo">
       <div class="cabecera-panel cabecera-perfil">
         <div>
-          <p class="etiqueta">PERFIL VERTICAL GFS</p>
+          <p class="etiqueta">PERFIL VERTICAL DEL MODELO</p>
           <h2>6. Perfil tipo radiosondeo</h2>
-          <p class="descripcion-seccion">Perfil previsto por NOAA GFS para el punto seleccionado. No es un radiosondeo observado con globo.</p>
+          <p id="descripcionPerfil" class="descripcion-seccion">El perfil se adapta al modelo seleccionado: GFS usa el perfil GFS y Météo-France usa AROME France.</p>
         </div>
         <div class="control control-hora-perfil">
           <label for="horaPerfil">Fecha y hora del perfil</label>
           <input id="horaPerfil" class="barra-hora-perfil" type="range" min="0" max="0" step="1" value="0" disabled>
-          <output id="horaPerfilTexto" class="hora-perfil-texto" for="horaPerfil">Cargando perfil GFS…</output>
+          <output id="horaPerfilTexto" class="hora-perfil-texto" for="horaPerfil">Cargando perfil…</output>
           <small id="estadoPerfil">Consultando niveles de presión…</small>
         </div>
       </div>
@@ -250,7 +250,7 @@
             <h3>6.1 Skew-T / log-P avanzado</h3>
             <p>Temperatura, punto de rocío, parcela superficial, adiabáticas secas y húmedas, líneas de mezcla, temperatura de disparo y áreas de CAPE/CIN.</p>
           </div>
-          <span class="insignia insignia-modelo">Parcela superficial GFS</span>
+          <span id="insigniaModeloPerfil" class="insignia insignia-modelo">Parcela superficial</span>
         </div>
         <div class="lienzo lienzo-skewt">
           <canvas id="graficoSkewT"></canvas>
@@ -300,7 +300,7 @@
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>6.4 Hodógrafa GFS</h3>
+            <h3 id="tituloHodografa">6.4 Hodógrafa</h3>
             <p>Variación vectorial del viento con la altura, en m/s.</p>
           </div>
           <div class="lienzo lienzo-hodografa">
@@ -329,11 +329,11 @@
               </tr>
             </thead>
             <tbody id="tablaPerfilNiveles">
-              <tr><td colspan="7">Cargando niveles GFS…</td></tr>
+              <tr><td colspan="7">Cargando niveles del modelo…</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="nota-metodo">Los niveles situados por debajo del terreno pueden no existir para puntos elevados. Cuando GFS no entrega Td directamente, se calcula con la temperatura y la humedad relativa del mismo nivel.</p>
+        <p class="nota-metodo">Los niveles situados por debajo del terreno pueden no existir para puntos elevados. Cuando el modelo no entrega Td directamente, se calcula con la temperatura y la humedad relativa del mismo nivel.</p>
       </article>
 
       <div class="perfil-resumen perfil-resumen-termo" id="perfilResumenTermo">
@@ -356,7 +356,7 @@
         <div class="tarjeta-perfil"><span>Cizalladura 0–3 km</span><strong id="perfilShear3">—</strong><small>Vector total</small></div>
         <div class="tarjeta-perfil"><span>Inversión baja</span><strong id="perfilInversion">—</strong><small>Hasta 3 km AGL</small></div>
       </div>
-      <p class="nota-metodo">CAPE, CIN y los niveles termodinámicos del Skew-T se calculan en el navegador con una parcela superficial. Pueden diferir del campo CAPE/CIN nativo de GFS por el método de parcela, la interpolación vertical y el tratamiento de la temperatura virtual. Los índices Haines son orientativos.</p>
+      <p class="nota-metodo">CAPE, CIN y los niveles termodinámicos del Skew-T se calculan en el navegador con una parcela superficial. Pueden diferir del CAPE nativo del modelo por el método de parcela, la interpolación vertical y el tratamiento de la temperatura virtual. Los índices Haines son orientativos.</p>
     </section>
 
     <section class="panel tabla-panel tabla-nocturna-panel">
@@ -420,7 +420,7 @@
   <footer>
     <p><strong>Predicción automática:</strong> <span id="modeloFuente">Mejor ajuste Open-Meteo</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
-    <p>La temperatura a 850 hPa, el perfil vertical y el Skew-T proceden siempre de NOAA GFS. Las variables avanzadas pueden usar GFS como apoyo cuando el modelo principal no las ofrece.</p>
+    <p>La temperatura a 850 hPa continúa procediendo de NOAA GFS. El perfil vertical y el Skew-T usan <span id="fuentePerfilPie">el modelo correspondiente</span>: GFS cuando se selecciona GFS y AROME France cuando se selecciona Météo-France. Con los demás modelos, el perfil utiliza GFS como apoyo.</p>
     <p>Observaciones de estaciones: AEMET OpenData cuando el archivo actualizado está disponible. Información orientativa; los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>
 
@@ -428,6 +428,6 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app-v63.js?v=6.3.0"></script>
+  <script src="app-v65.js?v=6.5.0"></script>
 </body>
 </html>
