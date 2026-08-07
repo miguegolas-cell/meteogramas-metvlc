@@ -1,11 +1,12 @@
-# Meteogramas MetVlc v6.5
+# Meteogramas MetVlc · v6.6.0
 
-El modelo principal también controla la fuente del perfil vertical:
+Cambios principales:
 
-- **NOAA GFS seleccionado:** Skew‑T, perfil T/Td, hodógrafa, Haines, cizalladura y diagnóstico de mezcla con GFS.
-- **Météo‑France seleccionado:** los mismos productos con **AROME France estándar de 2,5 km**.
-- **Mejor ajuste, ECMWF o ICON:** el meteograma conserva el modelo elegido y el perfil vertical utiliza GFS como fuente de apoyo, indicado en pantalla.
+- CAPE, CIN y LI se calculan siempre a partir del perfil AROME France 2,5 km, independientemente del modelo principal.
+- El horizonte de esos índices queda limitado a la disponibilidad de AROME (aprox. 51 h); no se rellenan después con otro modelo.
+- Se elimina el gráfico simple de perfil T/Td; se mantienen Skew-T, hodógrafa y tabla por niveles.
+- El bloque de resumen pasa a llamarse “Pronóstico principales variables meteorológicas para hoy”.
+- Nueva jerarquía cromática para separar mapa, resumen, observaciones, meteogramas, perfil y tablas.
+- Se mantienen temperatura a 850 hPa desde GFS, observaciones AEMET y selector de Skew-T GFS/AROME según el modelo principal.
 
-GFS aporta 37 niveles entre 1000 y 100 hPa en esta interfaz. AROME aporta 24 niveles entre 1000 y 100 hPa y queda limitado aproximadamente a 2 días. No se mezclan niveles de GFS y AROME dentro de un mismo Skew‑T.
-
-Sube `index.html`, `app-v65.js`, `estilos-v65.css` y las carpetas `datos`, `scripts` y `.github`. Después elimina `app-v64.js` y `estilos-v64.css` cuando compruebes que v6.5 carga correctamente.
+Sube a GitHub Pages: `index.html`, `app-v66.js`, `estilos-v66.css`, `README.md`, `datos/`, `scripts/` y `.github/`.
