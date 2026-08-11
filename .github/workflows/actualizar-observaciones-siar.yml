@@ -2,7 +2,7 @@ name: Actualizar observaciones SiAR
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -13,20 +13,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Comprobar horario de actualización
+        id: horario
+        run: |
+          HORA=$(TZ=Europe/Madrid date +%H)
+
+          echo "Hora peninsular actual: $HORA"
+
+          if [[ "$HORA" =~ ^(10|12|14|16|18|20|22)$ ]]; then
+            echo "ejecutar=true" >> "$GITHUB_OUTPUT"
+            echo "Corresponde actualizar SiAR"
+          else
+            echo "ejecutar=false" >> "$GITHUB_OUTPUT"
+            echo "Fuera del horario de actualización SiAR"
+          fi
+
       - name: Descargar repositorio
+        if: steps.horario.outputs.ejecutar == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v4
 
       - name: Configurar Python
+        if: steps.horario.outputs.ejecutar == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Descargar observaciones SiAR
+        if: steps.horario.outputs.ejecutar == 'true' || github.event_name == 'workflow_dispatch'
         env:
           SIAR_TOKEN: ${{ secrets.SIAR_TOKEN }}
         run: python scripts/actualizar_observaciones_siar.py
 
       - name: Publicar JSON actualizado
+        if: steps.horario.outputs.ejecutar == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
