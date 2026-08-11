@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos-v67.css?v=6.7.0">
+  <link rel="stylesheet" href="estilos-v68.css?v=6.8.0">
 </head>
 <body>
   <header class="cabecera">
@@ -48,11 +48,10 @@
       <div class="control">
         <label for="modelo">Modelo meteorológico</label>
         <select id="modelo">
-          <option value="best_match" selected>Mejor ajuste Open-Meteo</option>
-          <option value="ecmwf_ifs">ECMWF IFS HRES · 9 km</option>
-          <option value="dwd_icon_seamless">DWD ICON · global/europeo</option>
-          <option value="ncep_gfs_seamless">NOAA GFS · global</option>
-          <option value="meteofrance_seamless">Météo-France · AROME/ARPEGE</option>
+          <option value="best_match" selected>Auto · resolución variable</option>
+          <option value="ecmwf_ifs">ECMWF · 9 km</option>
+          <option value="ncep_gfs_seamless">GFS · 13 km</option>
+          <option value="meteofrance_seamless">AROME/ARPEGE · 2,5–11 km</option>
         </select>
         <small id="ayudaModelo">Selección automática de los modelos más adecuados para el punto.</small>
       </div>
@@ -137,7 +136,7 @@
           <h2>Meteogramas</h2>
         </div>
         <div class="metadatos-graficos">
-          <p id="modeloTexto">Modelo: Mejor ajuste Open-Meteo</p>
+          <p id="modeloTexto">Modelo: Auto · resolución variable</p>
           <p id="periodoTexto">Próximos 7 días · Hora local peninsular</p>
         </div>
       </div>
@@ -193,20 +192,33 @@
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>5.1 CAPE y CIN</h3>
-            <p>Energía convectiva disponible e inhibición convectiva, en J/kg</p>
+            <h3>5.1 CAPE</h3>
+            <p>Energía potencial convectiva disponible, en J/kg</p>
           </div>
           <div class="lienzo">
-            <canvas id="graficoCapeCin"></canvas>
-            <div id="sinDatosCapeCin" class="sin-datos" hidden></div>
+            <canvas id="graficoCape"></canvas>
+            <div id="sinDatosCape" class="sin-datos" hidden></div>
           </div>
-          <p id="fuenteCapeCin" class="nota-variable">Fuente fija de inestabilidad: AROME France 2,5 km.</p>
-          <p class="escala-operativa">Escala operativa MetVlc para la Comunitat Valenciana: CAPE muy baja 0–100, baja 100–300, moderada 300–700, alta 700–1200 y muy alta &gt;1200 J/kg. CIN se interpreta por su magnitud negativa.</p>
+          <p id="fuenteCape" class="nota-variable">Fuente fija de inestabilidad: AROME France 2,5 km.</p>
+          <p class="escala-operativa">Escala operativa MetVlc para la Comunitat Valenciana: muy baja 0–100, baja 100–300, moderada 300–700, alta 700–1200, muy alta 1200–2000 y extrema &gt;2000 J/kg.</p>
         </article>
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>5.2 Lifted Index (LI)</h3>
+            <h3>5.2 CIN</h3>
+            <p>Inhibición convectiva, en J/kg; valores más negativos indican una tapadera más intensa</p>
+          </div>
+          <div class="lienzo">
+            <canvas id="graficoCin"></canvas>
+            <div id="sinDatosCin" class="sin-datos" hidden></div>
+          </div>
+          <p id="fuenteCin" class="nota-variable">Fuente fija de inestabilidad: AROME France 2,5 km.</p>
+          <p class="escala-operativa">Escala operativa MetVlc: inhibición escasa 0 a −15, débil −15 a −35, moderada −35 a −75, fuerte −75 a −125 y muy fuerte &lt;−125 J/kg.</p>
+        </article>
+
+        <article class="grafico">
+          <div class="titulo-grafico">
+            <h3>5.3 Lifted Index (LI)</h3>
             <p>Índice de estabilidad; los valores negativos indican mayor inestabilidad</p>
           </div>
           <div class="lienzo">
@@ -218,7 +230,7 @@
 
         <article class="grafico">
           <div class="titulo-grafico">
-            <h3>5.3 Altura de la capa límite (PBL)</h3>
+            <h3>5.4 Altura de la capa límite (PBL)</h3>
             <p>Profundidad prevista de la capa límite planetaria, en metros</p>
           </div>
           <div class="lienzo">
@@ -234,7 +246,7 @@
         <div>
           <p class="etiqueta">PERFIL VERTICAL DEL MODELO</p>
           <h2>6. Perfil tipo radiosondeo</h2>
-          <p id="descripcionPerfil" class="descripcion-seccion">El perfil se adapta al modelo seleccionado: GFS usa el perfil GFS y Météo-France usa AROME France.</p>
+          <p id="descripcionPerfil" class="descripcion-seccion">El perfil se adapta al modelo seleccionado: GFS usa el perfil GFS y AROME/ARPEGE usa AROME France 2,5 km para el perfil.</p>
         </div>
         <div class="control control-hora-perfil">
           <label for="horaPerfil">Fecha y hora del perfil</label>
@@ -409,16 +421,16 @@
   </main>
 
   <footer>
-    <p><strong>Predicción automática:</strong> <span id="modeloFuente">Mejor ajuste Open-Meteo</span>, suministrada mediante Open-Meteo.</p>
+    <p><strong>Predicción automática:</strong> <span id="modeloFuente">Auto · resolución variable</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
-    <p>La temperatura a 850 hPa continúa procediendo de NOAA GFS. CAPE, CIN y LI se calculan siempre con AROME France 2,5 km. El perfil vertical y el Skew-T usan <span id="fuentePerfilPie">el modelo correspondiente</span>: GFS cuando se selecciona GFS y AROME France cuando se selecciona Météo-France. Con los demás modelos, el perfil utiliza GFS como apoyo.</p>
-    <p>Observaciones de estaciones: AEMET OpenData cuando el archivo actualizado está disponible. Información orientativa; los avisos y predicciones oficiales corresponden a AEMET.</p>
+    <p>La temperatura a 850 hPa continúa procediendo de NOAA GFS. CAPE, CIN y LI se calculan siempre con AROME France 2,5 km. El perfil vertical y el Skew-T usan <span id="fuentePerfilPie">el modelo correspondiente</span>: GFS cuando se selecciona GFS y AROME France cuando se selecciona AROME/ARPEGE. Con los demás modelos, el perfil utiliza GFS como apoyo.</p>
+    <p>Observaciones de estaciones: AEMET OpenData y SiAR-MAPA cuando los archivos actualizados están disponibles. Información orientativa; los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app-v67.js?v=6.7.0"></script>
+  <script src="app-v68.js?v=6.8.0"></script>
 </body>
 </html>
