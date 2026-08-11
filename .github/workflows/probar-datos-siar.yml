@@ -1,109 +1,118 @@
-name: Probar datos horarios SiAR
+name: Diagnóstico API SiAR
 
 on:
   workflow_dispatch:
 
 jobs:
-  probar:
+  diagnostico:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Consultar observaciones de Valencia
+      - name: Diagnosticar acceso SiAR
         env:
           SIAR_TOKEN: ${{ secrets.SIAR_TOKEN }}
         run: |
           python - <<'PY'
-          import json
           import os
-          import urllib.parse
+          import json
           import urllib.request
+          import urllib.parse
+          import urllib.error
           from datetime import datetime
           from zoneinfo import ZoneInfo
 
           BASE = "https://servicio.mapa.gob.es/siarapi"
           TOKEN = os.environ["SIAR_TOKEN"]
 
-          hoy = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d")
+          def pedir(url):
+              req = urllib.request.Request(
+                  url,
+                  headers={
+                      "User-Agent": "Mozilla/5.0 Meteogramas-MetVlc/1.0",
+                      "Accept": "application/json"
+                  }
+              )
 
-          parametros = {
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as r:
+                      raw = r.read()
+                      print("HTTP:", r.status)
+
+                      for enc in ("utf-8-sig", "cp1252", "latin-1"):
+                          try:
+                              return json.loads(raw.decode(enc))
+                          except:
+                              pass
+
+                      print(raw[:1000])
+                      return None
+
+              except urllib.error.HTTPError as e:
+                  print("HTTP ERROR:", e.code)
+                  print("Motivo:", e.reason)
+
+                  cuerpo = e.read()
+
+                  try:
+                      texto = cuerpo.decode("utf-8", errors="replace")
+                  except:
+                      texto = str(cuerpo)
+
+                  # Por seguridad, ocultamos el token si apareciera
+                  texto = texto.replace(TOKEN, "***TOKEN_OCULTO***")
+
+                  print("Respuesta del servidor:")
+                  print(texto[:3000])
+
+                  return None
+
+          # --------------------------------------------------
+          # 1. Comprobar límites del token
+          # --------------------------------------------------
+
+          print("=== ACCESOS DEL TOKEN ===")
+
+          url_accesos = (
+              f"{BASE}/API/V1/Info/ACCESOS?"
+              + urllib.parse.urlencode({"token": TOKEN})
+          )
+
+          accesos = pedir(url_accesos)
+
+          if accesos:
+              print(json.dumps(accesos, indent=2, ensure_ascii=False))
+
+          # --------------------------------------------------
+          # 2. Probar datos horarios
+          # --------------------------------------------------
+
+          hoy = datetime.now(
+              ZoneInfo("Europe/Madrid")
+          ).strftime("%Y-%m-%d")
+
+          print()
+          print("=== DATOS HORARIOS VALENCIA ===")
+          print("Fecha:", hoy)
+
+          params = {
               "token": TOKEN,
               "Id": "V",
               "FechaInicial": hoy,
               "FechaFinal": hoy
           }
 
-          url = (
+          url_datos = (
               f"{BASE}/API/V1/Datos/Horarios/PROVINCIA?"
-              + urllib.parse.urlencode(parametros)
+              + urllib.parse.urlencode(params)
           )
 
-          print(f"Consultando datos SiAR de Valencia para {hoy}")
-          print()
+          datos = pedir(url_datos)
 
-          with urllib.request.urlopen(url, timeout=60) as r:
-              raw = r.read()
+          if datos:
+              registros = datos.get("datos", [])
 
-          datos = None
+              print()
+              print("Registros recibidos:", len(registros))
+              print("Mensaje:", datos.get("MensajeRespuesta"))
 
-          for codificacion in ("utf-8-sig", "cp1252", "latin-1"):
-              try:
-                  datos = json.loads(raw.decode(codificacion))
-                  break
-              except (UnicodeDecodeError, json.JSONDecodeError):
-                  continue
-
-          if datos is None:
-              raise RuntimeError("No se pudo interpretar la respuesta de SiAR")
-
-          print("Mensaje SiAR:")
-          print(datos.get("MensajeRespuesta"))
-          print()
-
-          registros = datos.get("datos", [])
-
-          print(f"Registros horarios recibidos: {len(registros)}")
-          print()
-
-          if not registros:
-              print("No se han recibido registros.")
-              print(datos)
-              raise SystemExit(0)
-
-          # Nos quedamos con la observación más reciente de cada estación
-          ultimos = {}
-
-          def clave_hora(registro):
-              fecha = str(registro.get("Fecha", ""))
-              hora = str(registro.get("HorMin", 0)).zfill(4)
-              return fecha, hora
-
-          for r in registros:
-              estacion = str(r.get("Estacion", ""))
-
-              if not estacion:
-                  continue
-
-              if (
-                  estacion not in ultimos
-                  or clave_hora(r) > clave_hora(ultimos[estacion])
-              ):
-                  ultimos[estacion] = r
-
-          print(f"Estaciones con datos hoy: {len(ultimos)}")
-          print()
-          print("=== ÚLTIMA OBSERVACIÓN DE CADA ESTACIÓN ===")
-          print()
-
-          for codigo in sorted(ultimos):
-              r = ultimos[codigo]
-
-              print(
-                  f'{codigo} | '
-                  f'{r.get("Fecha")} {str(r.get("HorMin", "")).zfill(4)} | '
-                  f'T={r.get("TempMedia")} °C | '
-                  f'HR={r.get("HumedadMedia")} % | '
-                  f'V={r.get("VelViento")} | '
-                  f'Dir={r.get("DirViento")}° | '
-                  f'P={r.get("Precipitacion")} mm'
-              )
           PY
