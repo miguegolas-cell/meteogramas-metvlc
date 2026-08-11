@@ -31,7 +31,11 @@ jobs:
               )
 
           def consultar(ruta):
-              url = f"{BASE}{ruta}?{urllib.parse.urlencode({'token': TOKEN})}"
+              separador = "&" if "?" in ruta else "?"
+              url = (
+                  f"{BASE}{ruta}{separador}"
+                  + urllib.parse.urlencode({"token": TOKEN})
+              )
 
               with urllib.request.urlopen(url, timeout=30) as r:
                   raw = r.read()
@@ -44,48 +48,48 @@ jobs:
 
               raise RuntimeError("No se pudo decodificar la respuesta de SiAR")
 
+          # 1. Provincias
           provincias = consultar("/API/V1/Info/PROVINCIAS")
-          estaciones = consultar("/API/V1/Info/ESTACIONES")
 
-          print("=== PROVINCIAS QUE CONTIENEN 'VALEN' ===")
-
-          candidatas = []
+          valencia = None
 
           for p in provincias.get("datos", []):
-              nombre = normalizar(p.get("Provincia"))
+              if "valen" in normalizar(p.get("Provincia")):
+                  valencia = p
+                  break
 
-              if "valen" in nombre:
-                  candidatas.append(p)
-                  print(p)
+          if not valencia:
+              raise SystemExit("No se ha encontrado Valencia/València")
 
-          if not candidatas:
-              print("No se encontró provincia por nombre.")
-              print()
-              print("=== PROVINCIAS RECIBIDAS ===")
+          codigo_provincia = valencia["Codigo"]
 
-              for p in provincias.get("datos", []):
-                  print(p)
-
-              raise SystemExit(
-                  "La API respondió correctamente, pero no hemos identificado Valencia."
-              )
-
-          valencia = candidatas[0]
-          id_valencia = valencia["IdProvincia"]
-
-          print()
-          print("=== PROVINCIA SELECCIONADA ===")
+          print("=== PROVINCIA ===")
           print(valencia)
+          print()
+          print(f"Código SiAR de Valencia: {codigo_provincia}")
 
-          estaciones_valencia = [
-              e for e in estaciones.get("datos", [])
-              if e.get("IdProvincia") == id_valencia
-              and not e.get("Fecha_Baja")
-          ]
+          # 2. Todas las estaciones
+          estaciones = consultar("/API/V1/Info/ESTACIONES")
+
+          # Los códigos valencianos de SiAR comienzan por V
+          estaciones_valencia = []
+
+          for e in estaciones.get("datos", []):
+              codigo = str(e.get("Codigo", "")).upper()
+
+              if (
+                  codigo.startswith("V")
+                  and not e.get("Fecha_Baja")
+              ):
+                  estaciones_valencia.append(e)
+
+          estaciones_valencia.sort(
+              key=lambda x: str(x.get("Codigo", ""))
+          )
 
           print()
           print(
-              f"Estaciones activas encontradas en Valencia: "
+              f"Estaciones activas candidatas de Valencia: "
               f"{len(estaciones_valencia)}"
           )
           print()
