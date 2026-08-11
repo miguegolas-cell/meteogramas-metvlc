@@ -1,0 +1,57 @@
+name: Probar API SiAR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Probar conexión con SiAR
+        env:
+          SIAR_TOKEN: ${{ secrets.SIAR_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+
+          BASE = "https://servicio.mapa.gob.es/siarapi"
+          TOKEN = os.environ["SIAR_TOKEN"]
+
+          def consultar(ruta):
+              url = f"{BASE}{ruta}?{urllib.parse.urlencode({'token': TOKEN})}"
+              with urllib.request.urlopen(url, timeout=30) as r:
+                  return json.loads(r.read().decode("utf-8-sig"))
+
+          provincias = consultar("/API/V1/Info/PROVINCIAS")
+          estaciones = consultar("/API/V1/Info/ESTACIONES")
+
+          valencia = next(
+              p for p in provincias["datos"]
+              if p["Provincia"].lower() in ("valencia", "valència")
+          )
+
+          print("Provincia encontrada:")
+          print(valencia)
+
+          id_valencia = valencia["IdProvincia"]
+
+          estaciones_valencia = [
+              e for e in estaciones["datos"]
+              if e["IdProvincia"] == id_valencia
+              and not e.get("Fecha_Baja")
+          ]
+
+          print()
+          print(f"Estaciones activas encontradas en Valencia: {len(estaciones_valencia)}")
+          print()
+
+          for e in estaciones_valencia:
+              print(
+                  f'{e["Codigo"]} - {e["Estacion"]} | '
+                  f'{e["Termino"]} | {e["Altitud"]} m'
+              )
+          PY
