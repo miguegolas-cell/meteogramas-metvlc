@@ -1,19 +1,13 @@
-# Meteogramas MetVlc · v6.8.1
+# Meteogramas MetVlc · v6.8.2
 
 Cambios principales:
-- Se elimina ICON del selector de modelos.
-- Nombres de modelos más cortos y resolución visible en el desplegable: Auto (variable), ECMWF 9 km, GFS 13 km y AROME/ARPEGE 2,5–11 km.
-- CAPE, CIN y LI continúan calculándose siempre con AROME France 2,5 km.
-- CIN pasa a tener una gráfica independiente.
-- CAPE, CIN y LI recortan su eje X al intervalo real con datos AROME, evitando prolongar el gráfico durante días sin valores.
-- CAPE, CIN y LI mantienen las bandas cualitativas de fondo y los ejes Y numéricos.
-- PBL pasa a numerarse como 5.4.
-- Se mantienen las observaciones combinadas AEMET + SiAR de la v6.7.
+- CAPE se representa como gráfica de línea en lugar de barras.
+- Se mantienen las bandas operativas de fondo de CAPE.
+- CIN continúa representándose con su signo físico/termodinámico: 0 J/kg indica ausencia de inhibición y los valores negativos indican inhibición creciente.
+- Se refuerza visualmente la línea de 0 J/kg del eje Y de CIN y se garantiza que el 0 aparezca entre las marcas del eje.
+- El título del eje CIN explica directamente `0 = sin inhibición`.
+- Se mantiene la corrección v6.8.1 que recorta los ejes X de CAPE, CIN y LI al intervalo real con datos AROME.
+- Se mantienen AEMET + SiAR, selector de modelos sin ICON y el resto de funciones de v6.8.1.
 
-Sube a GitHub Pages: `index.html`, `app-v681.js`, `estilos-v681.css`, `README.md`.
+Sube a GitHub Pages: `index.html`, `app-v682.js`, `estilos-v682.css`, `README.md`.
 Mantén tus carpetas `datos/`, `scripts/` y `.github/` actuales.
-
-
-## Corrección v6.8.1
-
-Se corrige el recorte temporal de CAPE, CIN y LI: los valores `null` posteriores al horizonte AROME ya no se interpretan como cero. El eje X termina en la última hora con un dato AROME real.
