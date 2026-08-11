@@ -17,41 +17,84 @@ jobs:
           import os
           import urllib.parse
           import urllib.request
+          import unicodedata
 
           BASE = "https://servicio.mapa.gob.es/siarapi"
           TOKEN = os.environ["SIAR_TOKEN"]
 
+          def normalizar(texto):
+              texto = str(texto or "").lower()
+              texto = unicodedata.normalize("NFD", texto)
+              return "".join(
+                  c for c in texto
+                  if unicodedata.category(c) != "Mn"
+              )
+
           def consultar(ruta):
               url = f"{BASE}{ruta}?{urllib.parse.urlencode({'token': TOKEN})}"
+
               with urllib.request.urlopen(url, timeout=30) as r:
-                  return json.loads(r.read().decode("utf-8-sig"))
+                  raw = r.read()
+
+              for codificacion in ("utf-8-sig", "cp1252", "latin-1"):
+                  try:
+                      return json.loads(raw.decode(codificacion))
+                  except (UnicodeDecodeError, json.JSONDecodeError):
+                      continue
+
+              raise RuntimeError("No se pudo decodificar la respuesta de SiAR")
 
           provincias = consultar("/API/V1/Info/PROVINCIAS")
           estaciones = consultar("/API/V1/Info/ESTACIONES")
 
-          valencia = next(
-              p for p in provincias["datos"]
-              if p["Provincia"].lower() in ("valencia", "valència")
-          )
+          print("=== PROVINCIAS QUE CONTIENEN 'VALEN' ===")
 
-          print("Provincia encontrada:")
-          print(valencia)
+          candidatas = []
 
+          for p in provincias.get("datos", []):
+              nombre = normalizar(p.get("Provincia"))
+
+              if "valen" in nombre:
+                  candidatas.append(p)
+                  print(p)
+
+          if not candidatas:
+              print("No se encontró provincia por nombre.")
+              print()
+              print("=== PROVINCIAS RECIBIDAS ===")
+
+              for p in provincias.get("datos", []):
+                  print(p)
+
+              raise SystemExit(
+                  "La API respondió correctamente, pero no hemos identificado Valencia."
+              )
+
+          valencia = candidatas[0]
           id_valencia = valencia["IdProvincia"]
 
+          print()
+          print("=== PROVINCIA SELECCIONADA ===")
+          print(valencia)
+
           estaciones_valencia = [
-              e for e in estaciones["datos"]
-              if e["IdProvincia"] == id_valencia
+              e for e in estaciones.get("datos", [])
+              if e.get("IdProvincia") == id_valencia
               and not e.get("Fecha_Baja")
           ]
 
           print()
-          print(f"Estaciones activas encontradas en Valencia: {len(estaciones_valencia)}")
+          print(
+              f"Estaciones activas encontradas en Valencia: "
+              f"{len(estaciones_valencia)}"
+          )
           print()
 
           for e in estaciones_valencia:
               print(
-                  f'{e["Codigo"]} - {e["Estacion"]} | '
-                  f'{e["Termino"]} | {e["Altitud"]} m'
+                  f'{e.get("Codigo")} - '
+                  f'{e.get("Estacion")} | '
+                  f'{e.get("Termino")} | '
+                  f'{e.get("Altitud")} m'
               )
           PY
