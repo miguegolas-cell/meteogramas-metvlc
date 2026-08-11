@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos-v66.css?v=6.6.0">
+  <link rel="stylesheet" href="estilos-v67.css?v=6.7.0">
 </head>
 <body>
   <header class="cabecera">
@@ -104,13 +104,13 @@
         <div>
           <p class="etiqueta">OBSERVACIONES ACTUALES</p>
           <h2>Estaciones próximas al punto seleccionado</h2>
-          <p class="descripcion-seccion">Datos medidos por estaciones AEMET. La distancia y la diferencia de altitud ayudan a valorar su representatividad.</p>
+          <p class="descripcion-seccion">Datos medidos por estaciones AEMET y SiAR. La selección combina proximidad y diferencia de altitud para priorizar las estaciones más representativas.</p>
         </div>
         <span id="estadoObservaciones" class="insignia insignia-observaciones">Buscando estaciones…</span>
       </div>
 
       <div class="observacion-destacada" id="observacionDestacada">
-        <div class="tarjeta-observacion"><span>Estación más próxima</span><strong id="obsNombre">—</strong><small id="obsDistancia">—</small></div>
+        <div class="tarjeta-observacion"><span>Estación más representativa</span><strong id="obsNombre">—</strong><small id="obsDistancia">—</small></div>
         <div class="tarjeta-observacion"><span>Temperatura / HR</span><strong id="obsTempHr">—</strong><small id="obsRocio">Punto de rocío: —</small></div>
         <div class="tarjeta-observacion"><span>Viento / racha</span><strong id="obsViento">—</strong><small id="obsDireccion">—</small></div>
         <div class="tarjeta-observacion"><span>DPV observado</span><strong id="obsDpv">—</strong><small id="obsHora">—</small></div>
@@ -127,7 +127,7 @@
         </table>
       </div>
       <div id="fallbackObservaciones" class="aviso-observaciones" hidden></div>
-      <p class="nota-metodo">Una estación lejana, situada a distinta altitud o en otro entorno topográfico puede no representar el punto seleccionado. Cuando no hay datos de estación utilizamos únicamente una estimación de modelo, marcada expresamente como no observada.</p>
+      <p class="nota-metodo">Una estación lejana, situada a distinta altitud o en otro entorno topográfico puede no representar el punto seleccionado. AEMET y SiAR se identifican por separado. El viento de SiAR se publica en m/s y se muestra convertido a km/h. Cuando no hay datos de estación utilizamos únicamente una estimación de modelo, marcada expresamente como no observada.</p>
     </section>
 
     <section class="panel graficos-panel" aria-label="Meteogramas horarios">
@@ -419,6 +419,6 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app-v66.js?v=6.6.0"></script>
+  <script src="app-v67.js?v=6.7.0"></script>
 </body>
 </html>

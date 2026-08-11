@@ -1,12 +1,12 @@
-# Meteogramas MetVlc · v6.6.0
+# Meteogramas MetVlc · v6.7.0
 
 Cambios principales:
+- Observaciones combinadas de AEMET + SiAR.
+- La web carga `datos/observaciones_aemet.json` y `datos/observaciones_siar.json` de forma independiente; si una red falla, utiliza la otra.
+- Las estaciones se ordenan por una puntuación de representatividad basada principalmente en distancia y con penalización moderada por diferencia de altitud.
+- Identificación visual de la red AEMET/SiAR en la tabla.
+- `VelViento` de SiAR se interpreta en m/s y se convierte a km/h al mostrarlo.
+- SiAR no aporta racha en el registro medio horario usado por el visor, por lo que esa celda aparece como `—`.
 
-- CAPE, CIN y LI se calculan siempre a partir del perfil AROME France 2,5 km, independientemente del modelo principal.
-- El horizonte de esos índices queda limitado a la disponibilidad de AROME (aprox. 51 h); no se rellenan después con otro modelo.
-- Se elimina el gráfico simple de perfil T/Td; se mantienen Skew-T, hodógrafa y tabla por niveles.
-- El bloque de resumen pasa a llamarse “Pronóstico principales variables meteorológicas para hoy”.
-- Nueva jerarquía cromática para separar mapa, resumen, observaciones, meteogramas, perfil y tablas.
-- Se mantienen temperatura a 850 hPa desde GFS, observaciones AEMET y selector de Skew-T GFS/AROME según el modelo principal.
-
-Sube a GitHub Pages: `index.html`, `app-v66.js`, `estilos-v66.css`, `README.md`, `datos/`, `scripts/` y `.github/`.
+Sube a GitHub Pages: `index.html`, `app-v67.js`, `estilos-v67.css`, `README.md`.
+Mantén tus carpetas `datos/`, `scripts/` y `.github/` actuales.
