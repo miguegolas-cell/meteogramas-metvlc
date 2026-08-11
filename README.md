@@ -1,4 +1,4 @@
-# Meteogramas MetVlc · v6.8.0
+# Meteogramas MetVlc · v6.8.1
 
 Cambios principales:
 - Se elimina ICON del selector de modelos.
@@ -10,5 +10,10 @@ Cambios principales:
 - PBL pasa a numerarse como 5.4.
 - Se mantienen las observaciones combinadas AEMET + SiAR de la v6.7.
 
-Sube a GitHub Pages: `index.html`, `app-v68.js`, `estilos-v68.css`, `README.md`.
+Sube a GitHub Pages: `index.html`, `app-v681.js`, `estilos-v681.css`, `README.md`.
 Mantén tus carpetas `datos/`, `scripts/` y `.github/` actuales.
+
+
+## Corrección v6.8.1
+
+Se corrige el recorte temporal de CAPE, CIN y LI: los valores `null` posteriores al horizonte AROME ya no se interpretan como cero. El eje X termina en la última hora con un dato AROME real.
