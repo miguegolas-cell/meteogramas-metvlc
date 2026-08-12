@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-12T22:37:13.266833Z",
+  "generated_at": "2026-08-12T23:21:29.191520Z",
   "source": "AEMET OpenData · observación convencional",
-  "station_count": 121,
+  "station_count": 120,
   "stations": [
     {
       "id": "7250C",
@@ -272,23 +272,6 @@
       "wind_direction": null,
       "gust": null,
       "gust_direction": null,
-      "precip": 0.0,
-      "pressure": null
-    },
-    {
-      "id": "8472A",
-      "name": "ARENOS-PANTANO",
-      "lat": 40.087706,
-      "lon": -0.54685,
-      "alt": 601.0,
-      "time": "2026-08-12T10:00:00+0000",
-      "temp": 30.1,
-      "rh": 52.0,
-      "dewpoint": 19.177250943468632,
-      "wind_speed": 3.3,
-      "wind_direction": 178.0,
-      "gust": 5.7,
-      "gust_direction": 152.0,
       "precip": 0.0,
       "pressure": null
     },
