@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos-v682.css?v=6.8.2">
+  <link rel="stylesheet" href="estilos-v683.css?v=6.8.2">
 </head>
 <body>
   <header class="cabecera">
@@ -186,20 +186,20 @@
         <div class="separador-seccion">
           <p class="etiqueta">INESTABILIDAD Y CAPA LÍMITE</p>
           <h3>5. Parámetros de inestabilidad</h3>
-          <p>CAPE, CIN y LI se calculan siempre con el perfil de alta resolución de AROME France 2,5 km, independientemente del modelo seleccionado para el meteograma. Su horizonte útil es de aproximadamente 51 horas. La PBL mantiene su fuente indicada por separado.</p>
+          <p>El CAPE se muestra temporalmente en modo comparación: CAPE nativo de AROME France 2,5 km frente al SBCAPE calculado por MetVlc con parcela superficial. CIN y LI continúan calculándose con el perfil AROME. Su horizonte útil es de aproximadamente 51 horas. La PBL mantiene su fuente indicada por separado.</p>
           <p id="estadoVariablesAvanzadas" class="estado-variables">Comprobando variables disponibles…</p>
         </div>
 
         <article class="grafico">
           <div class="titulo-grafico">
             <h3>5.1 CAPE</h3>
-            <p>Energía potencial convectiva disponible, en J/kg</p>
+            <p>Comparación CAPE nativo AROME vs SBCAPE calculado por MetVlc, en J/kg</p>
           </div>
           <div class="lienzo">
             <canvas id="graficoCape"></canvas>
             <div id="sinDatosCape" class="sin-datos" hidden></div>
           </div>
-          <p id="fuenteCape" class="nota-variable">Fuente fija de inestabilidad: AROME France 2,5 km.</p>
+          <p id="fuenteCape" class="nota-variable">Comparación de control: CAPE nativo AROME y SBCAPE calculado MetVlc.</p>
           <p class="escala-operativa">Escala operativa MetVlc para la Comunitat Valenciana: muy baja 0–100, baja 100–300, moderada 300–700, alta 700–1200, muy alta 1200–2000 y extrema &gt;2000 J/kg.</p>
         </article>
 
@@ -423,7 +423,7 @@
   <footer>
     <p><strong>Predicción automática:</strong> <span id="modeloFuente">Auto · resolución variable</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
-    <p>La temperatura a 850 hPa continúa procediendo de NOAA GFS. CAPE, CIN y LI se calculan siempre con AROME France 2,5 km. El perfil vertical y el Skew-T usan <span id="fuentePerfilPie">el modelo correspondiente</span>: GFS cuando se selecciona GFS y AROME France cuando se selecciona AROME/ARPEGE. Con los demás modelos, el perfil utiliza GFS como apoyo.</p>
+    <p>La temperatura a 850 hPa continúa procediendo de NOAA GFS. CAPE compara el valor nativo AROME con el SBCAPE calculado por MetVlc; CIN y LI se calculan con AROME France 2,5 km. El perfil vertical y el Skew-T usan <span id="fuentePerfilPie">el modelo correspondiente</span>: GFS cuando se selecciona GFS y AROME France cuando se selecciona AROME/ARPEGE. Con los demás modelos, el perfil utiliza GFS como apoyo.</p>
     <p>Observaciones de estaciones: AEMET OpenData y SiAR-MAPA cuando los archivos actualizados están disponibles. Información orientativa; los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>
 
@@ -431,6 +431,6 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app-v682.js?v=6.8.2"></script>
+  <script src="app-v683.js?v=6.8.3"></script>
 </body>
 </html>
