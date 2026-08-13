@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="estilos-v683.css?v=6.8.2">
+  <link rel="stylesheet" href="estilos-v684.css?v=6.8.4">
 </head>
 <body>
   <header class="cabecera">
@@ -186,20 +186,20 @@
         <div class="separador-seccion">
           <p class="etiqueta">INESTABILIDAD Y CAPA LÍMITE</p>
           <h3>5. Parámetros de inestabilidad</h3>
-          <p>El CAPE se muestra temporalmente en modo comparación: CAPE nativo de AROME France 2,5 km frente al SBCAPE calculado por MetVlc con parcela superficial. CIN y LI continúan calculándose con el perfil AROME. Su horizonte útil es de aproximadamente 51 horas. La PBL mantiene su fuente indicada por separado.</p>
+          <p>El CAPE se muestra con el valor nativo de AROME France 2,5 km. CIN y LI continúan calculándose a partir del perfil AROME. Su horizonte útil es el disponible en AROME. La PBL mantiene su fuente indicada por separado.</p>
           <p id="estadoVariablesAvanzadas" class="estado-variables">Comprobando variables disponibles…</p>
         </div>
 
         <article class="grafico">
           <div class="titulo-grafico">
             <h3>5.1 CAPE</h3>
-            <p>Comparación CAPE nativo AROME vs SBCAPE calculado por MetVlc, en J/kg</p>
+            <p>CAPE nativo de AROME France 2,5 km, en J/kg</p>
           </div>
           <div class="lienzo">
             <canvas id="graficoCape"></canvas>
             <div id="sinDatosCape" class="sin-datos" hidden></div>
           </div>
-          <p id="fuenteCape" class="nota-variable">Comparación de control: CAPE nativo AROME y SBCAPE calculado MetVlc.</p>
+          <p id="fuenteCape" class="nota-variable">AROME France 2,5 km · CAPE nativo del modelo.</p>
           <p class="escala-operativa">Escala operativa MetVlc para la Comunitat Valenciana: muy baja 0–100, baja 100–300, moderada 300–700, alta 700–1200, muy alta 1200–2000 y extrema &gt;2000 J/kg.</p>
         </article>
 
@@ -272,7 +272,7 @@
           <span><i class="muestra muestra-temp"></i>Temperatura ambiental</span>
           <span><i class="muestra muestra-rocio"></i>Punto de rocío</span>
           <span><i class="muestra muestra-parcela"></i>Parcela</span>
-          <span><i class="muestra muestra-cape"></i>CAPE calculado</span>
+          <span><i class="muestra muestra-cape"></i>SBCAPE calculado</span>
           <span><i class="muestra muestra-cin"></i>CIN calculado</span>
           <span><i class="muestra muestra-disparo"></i>Construcción CCL / T de disparo</span>
           <span><i class="muestra muestra-mixing"></i>Mezcla seca hasta la PBL</span>
@@ -359,7 +359,7 @@
         <div class="tarjeta-perfil"><span>Cizalladura 0–3 km</span><strong id="perfilShear3">—</strong><small>Vector total</small></div>
         <div class="tarjeta-perfil"><span>Inversión baja</span><strong id="perfilInversion">—</strong><small>Hasta 3 km AGL</small></div>
       </div>
-      <p class="nota-metodo">CAPE, CIN y los niveles termodinámicos del Skew-T se calculan en el navegador con una parcela superficial. Pueden diferir del CAPE nativo del modelo por el método de parcela, la interpolación vertical y el tratamiento de la temperatura virtual. Los índices Haines son orientativos.</p>
+      <p class="nota-metodo">En el meteograma, CAPE es el valor nativo de AROME. Dentro del Skew-T se mantiene un SBCAPE y CIN calculados en el navegador con una parcela superficial para diagnosticar el perfil. Los niveles termodinámicos se muestran en hPa y también en metros AGL. Los índices Haines son orientativos.</p>
     </section>
 
     <section class="panel tabla-panel tabla-nocturna-panel">
@@ -423,7 +423,7 @@
   <footer>
     <p><strong>Predicción automática:</strong> <span id="modeloFuente">Auto · resolución variable</span>, suministrada mediante Open-Meteo.</p>
     <p><strong>Cartografía:</strong> OpenStreetMap / OpenTopoMap. Límite provincial mediante servicio cartográfico público.</p>
-    <p>La temperatura a 850 hPa continúa procediendo de NOAA GFS. CAPE compara el valor nativo AROME con el SBCAPE calculado por MetVlc; CIN y LI se calculan con AROME France 2,5 km. El perfil vertical y el Skew-T usan <span id="fuentePerfilPie">el modelo correspondiente</span>: GFS cuando se selecciona GFS y AROME France cuando se selecciona AROME/ARPEGE. Con los demás modelos, el perfil utiliza GFS como apoyo.</p>
+    <p>La temperatura a 850 hPa continúa procediendo de NOAA GFS. El CAPE del meteograma es el valor nativo de AROME France 2,5 km; CIN y LI se calculan con el perfil AROME. Dentro del Skew-T, el SBCAPE/CIN y los niveles termodinámicos se calculan desde el perfil y estos niveles se expresan en hPa y metros AGL. El perfil vertical y el Skew-T usan <span id="fuentePerfilPie">el modelo correspondiente</span>: GFS cuando se selecciona GFS y AROME France cuando se selecciona AROME/ARPEGE. Con los demás modelos, el perfil utiliza GFS como apoyo.</p>
     <p>Observaciones de estaciones: AEMET OpenData y SiAR-MAPA cuando los archivos actualizados están disponibles. Información orientativa; los avisos y predicciones oficiales corresponden a AEMET.</p>
   </footer>
 
@@ -431,6 +431,6 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="app-v683.js?v=6.8.3"></script>
+  <script src="app-v684.js?v=6.8.4"></script>
 </body>
 </html>
