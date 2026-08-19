@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-19T20:43:22.945313Z",
+  "generated_at": "2026-08-19T21:01:39.174415Z",
   "source": "AEMET OpenData · observación convencional",
-  "station_count": 119,
+  "station_count": 118,
   "stations": [
     {
       "id": "7250C",
@@ -1105,23 +1105,6 @@
       "wind_direction": 91.0,
       "gust": 10.6,
       "gust_direction": 112.0,
-      "precip": 0.0,
-      "pressure": null
-    },
-    {
-      "id": "7007Y",
-      "name": "MAZARRÓN/LAS TORRES",
-      "lat": 37.588056,
-      "lon": -1.230556,
-      "alt": 66.0,
-      "time": "2026-08-19T08:00:00+0000",
-      "temp": 30.5,
-      "rh": 75.0,
-      "dewpoint": 25.57059963340766,
-      "wind_speed": 1.5,
-      "wind_direction": 202.0,
-      "gust": 3.1,
-      "gust_direction": 247.0,
       "precip": 0.0,
       "pressure": null
     },
