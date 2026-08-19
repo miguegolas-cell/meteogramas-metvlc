@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-19T22:46:39.154262Z",
+  "generated_at": "2026-08-19T23:11:04.089423Z",
   "source": "AEMET OpenData · observación convencional",
-  "station_count": 118,
+  "station_count": 117,
   "stations": [
     {
       "id": "7250C",
@@ -884,23 +884,6 @@
       "wind_direction": 255.0,
       "gust": 4.0,
       "gust_direction": 110.0,
-      "precip": 0.0,
-      "pressure": null
-    },
-    {
-      "id": "7023X",
-      "name": "FUENTE ALAMO",
-      "lat": 37.726478,
-      "lon": -1.167175,
-      "alt": 140.0,
-      "time": "2026-08-19T10:00:00+0000",
-      "temp": 34.7,
-      "rh": 40.0,
-      "dewpoint": 19.139790915758635,
-      "wind_speed": null,
-      "wind_direction": null,
-      "gust": null,
-      "gust_direction": null,
       "precip": 0.0,
       "pressure": null
     },
