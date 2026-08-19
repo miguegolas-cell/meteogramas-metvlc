@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-19T19:45:59.055639Z",
+  "generated_at": "2026-08-19T20:11:51.820293Z",
   "source": "AEMET OpenData · observación convencional",
-  "station_count": 120,
+  "station_count": 119,
   "stations": [
     {
       "id": "7250C",
@@ -1753,23 +1753,6 @@
       "gust_direction": 165.0,
       "precip": 0.0,
       "pressure": 1003.7
-    },
-    {
-      "id": "7218Y",
-      "name": "TOTANA",
-      "lat": 37.758556,
-      "lon": -1.5127,
-      "alt": 281.0,
-      "time": "2026-08-19T07:00:00+0000",
-      "temp": 26.0,
-      "rh": 43.0,
-      "dewpoint": 12.468769839965155,
-      "wind_speed": 0.8,
-      "wind_direction": 168.0,
-      "gust": 1.7,
-      "gust_direction": 137.0,
-      "precip": 0.0,
-      "pressure": null
     },
     {
       "id": "8337X",
