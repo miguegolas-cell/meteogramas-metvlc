@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T04:59:55.410761Z",
+  "generated_at": "2026-08-20T05:29:31.094637Z",
   "source": "AEMET OpenData · observación convencional",
   "station_count": 118,
   "stations": [
@@ -1828,16 +1828,16 @@
       "lat": 40.95806,
       "lon": 0.871385,
       "alt": 32.0,
-      "time": "2026-08-20T04:00:00+0000",
-      "temp": 26.3,
-      "rh": 79.0,
-      "dewpoint": 22.4,
-      "wind_speed": 0.6,
-      "wind_direction": 171.0,
-      "gust": 1.4,
-      "gust_direction": 359.0,
+      "time": "2026-08-20T05:00:00+0000",
+      "temp": 27.3,
+      "rh": 82.0,
+      "dewpoint": 24.0,
+      "wind_speed": 1.5,
+      "wind_direction": 331.0,
+      "gust": 2.7,
+      "gust_direction": 323.0,
       "precip": 0.0,
-      "pressure": 1006.8
+      "pressure": 1006.9
     },
     {
       "id": "8489X",
