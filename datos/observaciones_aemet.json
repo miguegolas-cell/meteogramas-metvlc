@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-24T20:48:09.480556Z",
+  "generated_at": "2026-08-24T21:16:20.736645Z",
   "source": "AEMET OpenData · observación convencional",
-  "station_count": 121,
+  "station_count": 120,
   "stations": [
     {
       "id": "7250C",
@@ -1224,23 +1224,6 @@
       "wind_direction": 245.0,
       "gust": 6.5,
       "gust_direction": 247.0,
-      "precip": 0.0,
-      "pressure": null
-    },
-    {
-      "id": "9562X",
-      "name": "MORELLA - PASEO ALAMEDA",
-      "lat": 40.621663,
-      "lon": -0.101819,
-      "alt": 990.0,
-      "time": "2026-08-24T08:00:00+0000",
-      "temp": 23.0,
-      "rh": 73.0,
-      "dewpoint": 17.904505492240297,
-      "wind_speed": 1.4,
-      "wind_direction": 53.0,
-      "gust": 4.2,
-      "gust_direction": 100.0,
       "precip": 0.0,
       "pressure": null
     },
